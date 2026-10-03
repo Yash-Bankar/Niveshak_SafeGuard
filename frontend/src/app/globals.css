@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@theme {
+  --color-page: #0b0c0e;
+  --color-surface: #16181e;
+  --color-muted: #9ca3af;
+  --color-positive: #22c55e;
+  --color-negative: #ef4444;
+  --color-brand-blue: #2563eb;
+  --color-brand-indigo: #4f46e5;
+  --radius-card: 1.75rem;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), var(--font-devanagari), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+}
+
+:root {
+  color-scheme: dark;
+  --gradient-primary: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background-color: var(--color-page);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Number convention (project-wide):
+ * prices, tickers, percentages, scores always render with
+ * `font-mono tabular-nums` (see src/lib/cn.ts docs / CLAUDE.md).
+ */
+
+.bg-gradient-primary {
+  background-image: var(--gradient-primary);
+}
+
+/*
+ * Apple-style frosted glass: layered translucency, heavy blur + saturation,
+ * a luminous top-edge highlight and soft ambient shadow.
+ */
+.glass {
+  background-color: rgb(255 255 255 / 0.055);
+  background-image: linear-gradient(
+    160deg,
+    rgb(255 255 255 / 0.12) 0%,
+    rgb(255 255 255 / 0.03) 48%,
+    rgb(255 255 255 / 0.07) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  box-shadow:
+    0 24px 48px -24px rgb(0 0 0 / 0.55),
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    inset 0 -1px 0 rgb(255 255 255 / 0.04);
+}
+
+.glass-strong {
+  background-color: rgb(22 24 30 / 0.72);
+  background-image: linear-gradient(
+    160deg,
+    rgb(255 255 255 / 0.1) 0%,
+    rgb(255 255 255 / 0.02) 100%
+  );
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  box-shadow:
+    0 32px 64px -24px rgb(0 0 0 / 0.6),
+    inset 0 1px 0 rgb(255 255 255 / 0.2);
+}
+
+.text-gradient-primary {
+  background-image: var(--gradient-primary);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0.04) 25%,
+    rgb(255 255 255 / 0.1) 50%,
+    rgb(255 255 255 / 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Faint animated grid for hero backgrounds (slow diagonal drift). */
+@keyframes grid-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 96px 96px;
+  }
+}
+
+.animated-grid {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: grid-drift 14s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer {
+    animation: none;
+  }
+  .animated-grid {
+    animation: none;
+  }
+}

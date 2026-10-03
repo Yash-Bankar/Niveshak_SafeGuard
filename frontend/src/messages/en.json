@@ -1,0 +1,145 @@
+{
+  "common": {
+    "appName": "Niveshak SafeGuard",
+    "getStarted": "Get started",
+    "goToDashboard": "Go to dashboard",
+    "howItWorks": "How it works",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "seeAll": "See all",
+    "changeLanguage": "Change language",
+    "check": {
+      "title": "Visitor check (temporary)",
+      "visitorId": "Visitor id (first 8 characters)",
+      "noVisitor": "No visitor cookie yet",
+      "noVisitorBody": "Reload this page — the request proxy sets the sg_vid cookie and the first render reads it.",
+      "rows": "Rows for this visitor",
+      "privacyNote": "The full UUID is never shown here — only the first 8 characters, and never in URLs or logs."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "markets": "Markets",
+    "safety": "Safety",
+    "profile": "Profile"
+  },
+  "landing": {
+    "meta": {
+      "title": "Niveshak SafeGuard",
+      "description": "Educational investor-safety companion: spot red flags in tips, measure your FOMO and learn the basics in your language. No trading, no advice, no predictions."
+    },
+    "hero": {
+      "headline": "Don't let a hot tip burn your savings.",
+      "sub": "Niveshak SafeGuard teaches you to spot red flags, measures how much FOMO drives your decisions, and warns you before you act — in your language, with no trading and no advice.",
+      "fomoLabel": "FOMO meter",
+      "fomoBand": "High FOMO",
+      "flagChip": "Red flag detected: promises guaranteed returns"
+    },
+    "features": {
+      "title": "Three tools that keep you safe",
+      "educator": {
+        "title": "AI finance educator",
+        "body": "Ask simple questions about SIPs, mutual funds, SEBI rules and more — answered in your language by an AI trained on official investor-education material."
+      },
+      "fomo": {
+        "title": "FOMO meter",
+        "body": "A 6-question quiz scores how impulsive your investing style is, so you can notice when urgency — not research — is driving the decision."
+      },
+      "scanner": {
+        "title": "Tip & screenshot fraud scanner",
+        "body": "Got a tip on Telegram or Instagram? Upload a screenshot and our AI checks it for warning signs like guaranteed-return claims. Your screenshot is never stored."
+      }
+    },
+    "how": {
+      "title": "How it works",
+      "steps": {
+        "1": {
+          "title": "Choose your language",
+          "body": "English, हिंदी or मराठी — the whole app is translated."
+        },
+        "2": {
+          "title": "Learn the basics",
+          "body": "Chat with the AI educator and take the 1-minute FOMO quiz."
+        },
+        "3": {
+          "title": "Check before you act",
+          "body": "Look up any stock, then take a safety quiz before your next step."
+        },
+        "4": {
+          "title": "See your verdict",
+          "body": "Get a clear, educational summary — strengths, risks and next steps."
+        }
+      }
+    },
+    "trust": {
+      "educational": "Educational",
+      "noTrading": "No trading",
+      "noScreenshots": "Your screenshots are never stored",
+      "sebi": "Built on SEBI investor-protection guidance"
+    },
+    "finalCta": {
+      "title": "Ready to build a safer habit?",
+      "body": "Start with a 1-minute safety check — free, private, no account needed."
+    },
+    "footer": {
+      "disclaimer": "Not a SEBI-registered advisor. Educational information only."
+    }
+  },
+  "language": {
+    "title": "Choose your language",
+    "subtitle": "You can change this any time from the top bar.",
+    "saving": "Setting up your language…",
+    "cards": {
+      "en": {
+        "name": "English",
+        "description": "Simple English for first-time investors"
+      },
+      "hi": {
+        "name": "हिंदी",
+        "description": "नए निवेशकों के लिए सरल हिंदी"
+      },
+      "mr": {
+        "name": "मराठी",
+        "description": "नवीन गुंतवणूकदारांसाठी सोपी मराठी"
+      }
+    }
+  },
+  "errors": {
+    "notFound": {
+      "title": "Page not found",
+      "body": "We couldn't find the page you were looking for.",
+      "home": "Go to home"
+    },
+    "generic": {
+      "title": "Something went wrong",
+      "body": "Please try again. If the problem continues, refresh the page.",
+      "retry": "Try again"
+    }
+  },
+  "disclaimer": {
+    "footer": "Educational information only — not investment advice. Niveshak SafeGuard is not a SEBI-registered advisor."
+  },
+  "fomo": {
+    "title": "FOMO quiz"
+  },
+  "market": {
+    "title": "Markets"
+  },
+  "stock": {
+    "title": "Stock"
+  },
+  "safety": {
+    "title": "Safety checks"
+  },
+  "chat": {
+    "title": "Niveshak AI"
+  },
+  "profile": {
+    "title": "Profile"
+  }
+}
