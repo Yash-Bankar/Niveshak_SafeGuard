@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { LOCALES, type Locale } from "@/i18n/routing";
 import { setLanguageCookies } from "@/lib/lang-cookie";
 import { Spinner } from "@/components/ui/Spinner";
@@ -14,17 +14,25 @@ import { cn } from "@/lib/cn";
  * (identical across locales by design). On choose: set the sg_lang cookie
  * (validated against en|hi|mr) plus next-intl's own NEXT_LOCALE cookie, then
  * router.replace to /{chosen}/dashboard.
+ *
+ * Pass `stay` (used on the Profile page) to keep the user on the current
+ * path instead — same behaviour as the TopBar switcher.
  */
-export function LanguageCards() {
+export function LanguageCards({ stay = false }: { stay?: boolean }) {
   const t = useTranslations("language");
   const router = useRouter();
+  const pathname = usePathname();
   const [pending, setPending] = React.useState<Locale | null>(null);
 
   function choose(locale: Locale) {
     if (pending) return;
     setPending(locale);
     setLanguageCookies(locale);
-    router.replace("/dashboard", { locale });
+    if (stay) {
+      router.replace(pathname, { locale });
+    } else {
+      router.replace("/dashboard", { locale });
+    }
   }
 
   return (

@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PlaceholderPage } from "@/components/features/shell/PlaceholderPage";
 
-export default async function DashboardPage({
+export default async function FomoQuizPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -9,7 +9,7 @@ export default async function DashboardPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const t = await getTranslations("dashboard");
+  const t = await getTranslations("fomo");
   const tc = await getTranslations("common");
 
   return (

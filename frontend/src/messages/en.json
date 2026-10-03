@@ -13,20 +13,19 @@
     "cancel": "Cancel",
     "seeAll": "See all",
     "changeLanguage": "Change language",
-    "check": {
-      "title": "Visitor check (temporary)",
-      "visitorId": "Visitor id (first 8 characters)",
-      "noVisitor": "No visitor cookie yet",
-      "noVisitorBody": "Reload this page — the request proxy sets the sg_vid cookie and the first render reads it.",
-      "rows": "Rows for this visitor",
-      "privacyNote": "The full UUID is never shown here — only the first 8 characters, and never in URLs or logs."
-    }
+    "comingSoon": "Coming soon"
   },
   "nav": {
+    "main": "Main",
     "home": "Home",
     "markets": "Markets",
     "safety": "Safety",
     "profile": "Profile"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Your investor-safety home base.",
+    "body": "Your FOMO score, watchlist and safety checks will appear here."
   },
   "landing": {
     "meta": {
@@ -125,21 +124,36 @@
     "footer": "Educational information only — not investment advice. Niveshak SafeGuard is not a SEBI-registered advisor."
   },
   "fomo": {
-    "title": "FOMO quiz"
+    "title": "FOMO quiz",
+    "subtitle": "A 1-minute quiz that scores how impulsive your investing style is.",
+    "body": "Your score will appear as a meter in the top bar.",
+    "takeTheQuiz": "Take the quiz"
   },
   "market": {
-    "title": "Markets"
+    "title": "Markets",
+    "subtitle": "Explore NIFTY stocks to understand how markets move.",
+    "body": "Trending stocks, search and your watchlist will appear here."
   },
   "stock": {
     "title": "Stock"
   },
   "safety": {
-    "title": "Safety checks"
+    "title": "Safety checks",
+    "subtitle": "Your safety checks in one place.",
+    "historyTitle": "History",
+    "emptyHistory": "No safety checks yet — your scans and quiz results will be listed here."
   },
   "chat": {
-    "title": "Niveshak AI"
+    "title": "Niveshak AI",
+    "bubbleLabel": "Open the assistant"
   },
   "profile": {
-    "title": "Profile"
+    "title": "Profile",
+    "anonymousNote": "Anonymous — no account, no personal data",
+    "languageTitle": "Language",
+    "fomoTitle": "FOMO quiz",
+    "fomoBody": "See how much FOMO drives your investing decisions.",
+    "privacyTitle": "Privacy",
+    "privacyBody": "No account or personal data is collected. Uploaded screenshots are scanned in memory and never stored."
   }
 }

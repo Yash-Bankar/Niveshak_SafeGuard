@@ -17,9 +17,9 @@ script in all locales.
 
 | Namespace | Used by | Notes |
 | --- | --- | --- |
-| `common` | App-wide buttons & labels | getStarted, goToDashboard, howItWorks, loading, retry, close, back, next, continue, cancel, seeAll, changeLanguage, appName |
-| `common.check` | Temporary visitor-check dashboard (replaced in Phase 5) | dev/verification strings |
-| `nav` | Top nav / bottom dock (Phase 5) | home, markets, safety, profile |
+| `common` | App-wide buttons & labels | getStarted, goToDashboard, howItWorks, loading, retry, close, back, next, continue, cancel, seeAll, changeLanguage, comingSoon, appName |
+| `nav` | TopBar / BottomDock nav (Phase 5) | main (aria-label), home, markets, safety, profile |
+| `dashboard` | Dashboard placeholder (Phase 5) | title, subtitle, body |
 | `landing.meta` | Landing page metadata | title, description |
 | `landing.hero` | Landing hero + phone mock visual | headline, sub, fomoLabel, fomoBand, flagChip ("Red flag detected: promises guaranteed returns") |
 | `landing.features` | 3 feature cards | educator / fomo / scanner — title + body each |
@@ -27,15 +27,15 @@ script in all locales.
 | `landing.trust` | Trust strip | educational, noTrading, noScreenshots, sebi |
 | `landing.finalCta` | Final CTA section | title, body |
 | `landing.footer` | Landing footer | disclaimer line |
-| `language` | First-run language selection page | title, subtitle, saving, cards (names/descriptions per language) |
-| `errors` | not-found + generic error boundaries | notFound (title/body/home), generic (title/body/retry) |
-| `disclaimer` | Reusable disclaimer footer (stock/quiz pages) | footer line |
-| `fomo` | FOMO quiz (Phase 7) | placeholder title only for now |
-| `market` | Markets (Phase 8) | placeholder title only for now |
+| `language` | First-run language selection page + profile language cards | title, subtitle, saving, cards (names/descriptions per language) |
+| `errors` | not-found + error boundary (Phase 5) | notFound (title/body/home), generic (title/body/retry — "Try again" button) |
+| `disclaimer` | `src/components/features/Disclaimer.tsx` (stock/quiz pages) | footer line |
+| `fomo` | FOMO meter slot + fomo-quiz placeholder | title, subtitle, body, takeTheQuiz (tooltip "Take the quiz") |
+| `market` | Markets placeholder (Phase 8 fills) | title, subtitle, body |
 | `stock` | Stock detail (Phase 9) | placeholder title only for now |
-| `safety` | Safety flow (Phase 10–11) | placeholder title only for now |
-| `chat` | Assistant bubble (Phase 6) | placeholder title only for now |
-| `profile` | Profile page (Phase 5) | placeholder title only for now |
+| `safety` | Safety placeholder — history list empty state (Phase 10 fills) | title, subtitle, historyTitle, emptyHistory |
+| `chat` | AssistantBubble aria/title (Phase 6 fills) | title, bubbleLabel |
+| `profile` | Profile page (Phase 5) | title, anonymousNote, languageTitle, fomoTitle, fomoBody, privacyTitle, privacyBody |
 
 ## Review checklist
 
