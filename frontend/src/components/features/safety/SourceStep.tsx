@@ -65,9 +65,18 @@ function inferSource(value: string): { key: SourceKey; other: string } | null {
 interface SourceStepProps {
   initialTipSource: string;
   onScanned: (payload: { tipSource: string; scan: FraudScanResult }) => void;
+  /** When true, the screenshot is optional (safety quiz); the standalone
+   *  scan leaves this false so a screenshot is required there. */
+  allowSkip?: boolean;
+  onSkip?: (tipSource: string) => void;
 }
 
-export function SourceStep({ initialTipSource, onScanned }: SourceStepProps) {
+export function SourceStep({
+  initialTipSource,
+  onScanned,
+  allowSkip = false,
+  onSkip,
+}: SourceStepProps) {
   const t = useTranslations("safety");
   const locale = useLocale();
 
@@ -170,6 +179,15 @@ export function SourceStep({ initialTipSource, onScanned }: SourceStepProps) {
     }
   }
 
+  function skipScan(): void {
+    if (!tipSource) {
+      setValidation(t("step1.sourceRequired"));
+      return;
+    }
+    setValidation(null);
+    onSkip?.(tipSource);
+  }
+
   if (phase === "scanning") {
     return (
       <div>
@@ -195,7 +213,7 @@ export function SourceStep({ initialTipSource, onScanned }: SourceStepProps) {
         <p className="text-sm font-medium text-white/85">
           {t("step1.sourceLabel")}
         </p>
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div data-tour="safety-source" className="mt-2 flex flex-wrap gap-2">
           {SOURCE_OPTIONS.map((option) => {
             const selected = sourceKey === option.key;
             return (
@@ -233,11 +251,16 @@ export function SourceStep({ initialTipSource, onScanned }: SourceStepProps) {
         ) : null}
       </div>
 
-      {/* Screenshot (required) */}
+      {/* Screenshot (optional when allowSkip) */}
       <div className="mt-5">
         <p className="text-sm font-medium text-white/85">
           {t("step1.uploadLabel")}
         </p>
+        {allowSkip ? (
+          <p className="mt-1 text-xs text-white/40">
+            {t("step1.screenshotRecommended")}
+          </p>
+        ) : null}
         {file ? (
           <div className="mt-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
             <FileImage className="size-4 shrink-0 text-blue-300" aria-hidden />
@@ -323,10 +346,20 @@ export function SourceStep({ initialTipSource, onScanned }: SourceStepProps) {
         {t("step1.privacy")}
       </p>
 
-      <Button className="mt-4 w-full" size="lg" onClick={() => void runScan()}>
+      <Button
+        data-tour="safety-scan-cta"
+        className="mt-4 w-full"
+        size="lg"
+        onClick={() => void runScan()}
+      >
         {t("step1.scanCta")}
         <ArrowRight className="size-4" aria-hidden />
       </Button>
+      {allowSkip ? (
+        <Button variant="ghost" className="mt-2 w-full" onClick={skipScan}>
+          {t("step1.skipScreenshot")}
+        </Button>
+      ) : null}
       <p className="mt-3 text-center text-xs text-white/40">
         {t("step1.whyScan")}
       </p>

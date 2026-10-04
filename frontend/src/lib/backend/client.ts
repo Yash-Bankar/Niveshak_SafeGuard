@@ -60,6 +60,45 @@ function isAbortError(err: unknown): boolean {
   return err instanceof Error && err.name === "AbortError";
 }
 
+const LANGUAGE_TIMEOUT_MS = 10_000;
+/** Remember which (session, locale) pairs we've already told the backend. */
+const languageSet = new Set<string>();
+
+/**
+ * Tell the backend which language this session should use (`POST /language`).
+ * Backend v2 stores the session language, so chat + quiz generation follow it.
+ * Best-effort and cached per (session, locale).
+ */
+async function ensureLanguage(sessionId: string, locale: Locale): Promise<void> {
+  const key = `${sessionId}:${locale}`;
+  if (languageSet.has(key)) return;
+  languageSet.add(key);
+
+  const env = getServerEnv();
+  const baseUrl = env.LLM_BACKEND_URL;
+  if (!baseUrl) return;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), LANGUAGE_TIMEOUT_MS);
+  try {
+    await fetch(`${baseUrl.replace(/\/+$/, "")}/language`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(env.LLM_BACKEND_API_KEY
+          ? { "x-api-key": env.LLM_BACKEND_API_KEY }
+          : {}),
+      },
+      body: JSON.stringify({ session_id: sessionId, language: locale }),
+      signal: controller.signal,
+      cache: "no-store",
+    });
+  } catch {
+    languageSet.delete(key); // allow a retry next time
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function assistant(input: AssistantInput): Promise<AssistantResponse> {
   const env = getServerEnv();
 
@@ -71,6 +110,8 @@ export async function assistant(input: AssistantInput): Promise<AssistantRespons
   if (!baseUrl) {
     throw new BackendError("unreachable", "LLM_BACKEND_URL is not set");
   }
+
+  await ensureLanguage(input.sessionId, input.locale);
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ASSISTANT_TIMEOUT_MS);
@@ -211,6 +252,8 @@ export async function safetyQuizStart(input: {
     return mockQuizStart(input);
   }
 
+  await ensureLanguage(input.sessionId, input.locale);
+
   const data = await callBackend(
     "/quiz/generate",
     {
@@ -234,6 +277,7 @@ export async function safetyQuizStart(input: {
 export async function safetyQuizSubmit(input: {
   sessionId: string;
   answers: string[];
+  locale: Locale;
   quizId?: string | null;
   tipSource?: string | null;
   scanSummary?: ScanSummaryPayload | null;
@@ -244,12 +288,15 @@ export async function safetyQuizSubmit(input: {
     return mockQuizSubmit(input);
   }
 
+  await ensureLanguage(input.sessionId, input.locale);
+
   let data: unknown;
   try {
     data = await callBackend(
       "/quiz/submit",
       {
         session_id: input.sessionId,
+        language: input.locale,
         answers: input.answers.map((letter, index) => ({
           question_index: index,
           selected_option: letter,

@@ -1,4 +1,5 @@
 import {
+  Briefcase,
   CandlestickChart,
   Home,
   ShieldCheck,
@@ -7,8 +8,8 @@ import {
 } from "lucide-react";
 
 export interface NavItem {
-  href: "/dashboard" | "/markets" | "/safety" | "/profile";
-  labelKey: "home" | "markets" | "safety" | "profile";
+  href: "/dashboard" | "/markets" | "/safety" | "/portfolio" | "/profile";
+  labelKey: "home" | "markets" | "safety" | "portfolio" | "profile";
   Icon: LucideIcon;
 }
 
@@ -20,6 +21,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/dashboard", labelKey: "home", Icon: Home },
   { href: "/markets", labelKey: "markets", Icon: CandlestickChart },
   { href: "/safety", labelKey: "safety", Icon: ShieldCheck },
+  { href: "/portfolio", labelKey: "portfolio", Icon: Briefcase },
   { href: "/profile", labelKey: "profile", Icon: User },
 ];
 

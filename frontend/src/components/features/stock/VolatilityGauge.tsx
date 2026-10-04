@@ -59,7 +59,7 @@ export function VolatilityGauge({
         </button>
       </div>
 
-      <div className="relative mx-auto mt-2 w-full max-w-[260px]">
+      <div className="relative mx-auto mt-2 w-full max-w-[260px] lg:max-w-[320px]">
         <svg
           viewBox="0 0 200 110"
           className="w-full"

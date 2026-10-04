@@ -46,6 +46,8 @@ interface ScanReportCardProps {
   /** Unknown scan → continue WITHOUT a scan summary (clears it). */
   onSkip: () => void;
   onEdit: () => void;
+  /** Override the primary button label (e.g. standalone scan → "Done"). */
+  continueLabel?: string;
 }
 
 export function ScanReportCard({
@@ -54,6 +56,7 @@ export function ScanReportCard({
   onContinue,
   onSkip,
   onEdit,
+  continueLabel,
 }: ScanReportCardProps) {
   const t = useTranslations("safety");
   const [acknowledged, setAcknowledged] = React.useState(false);
@@ -236,14 +239,14 @@ export function ScanReportCard({
             <Button variant="ghost" onClick={onEdit} disabled={generating}>
               {t("scan.editSource")}
             </Button>
-            <Button
-              onClick={onContinue}
-              disabled={generating || needsAck}
-              loading={generating}
-            >
-              {t("scan.continue")}
-              <ArrowRight className="size-4" aria-hidden />
-            </Button>
+              <Button
+                onClick={onContinue}
+                disabled={generating || needsAck}
+                loading={generating}
+              >
+                {continueLabel ?? t("scan.continue")}
+                <ArrowRight className="size-4" aria-hidden />
+              </Button>
           </div>
         )}
       </div>

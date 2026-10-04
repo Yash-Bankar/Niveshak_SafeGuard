@@ -60,10 +60,39 @@ export interface SafetyAttemptQuizResult {
   correct_answers: string[];
 }
 
+/** One weak area from the new `/quiz/submit` result. */
+export interface SafetyAttemptGap {
+  category: string;
+  correct: number;
+  total: number;
+  what_to_learn: string[];
+}
+
+/** One question review entry from the new `/quiz/submit` result. */
+export interface SafetyAttemptFeedback {
+  category: string;
+  question: string;
+  user_answer: string;
+  correct_answer: string;
+  is_correct: boolean;
+  explanation: string;
+}
+
+/** The new AI verdict payload (level + verdict + strengths/gaps/feedback). */
+export interface SafetyAttemptFinResult {
+  level: string;
+  verdict: string;
+  strengths: string[];
+  gaps: SafetyAttemptGap[];
+  feedback: SafetyAttemptFeedback[];
+  percentage: number | null;
+}
+
 /** Anything legal to store in `safety_attempts.result`. */
 export type SafetyAttemptResultPayload =
   | SafetyAttemptResult
-  | SafetyAttemptQuizResult;
+  | SafetyAttemptQuizResult
+  | SafetyAttemptFinResult;
 
 export const fomoProfiles = pgTable(
   "fomo_profiles",
@@ -115,13 +144,7 @@ export const holdings = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [
-    index("holdings_visitor_id_idx").on(table.visitorId),
-    uniqueIndex("holdings_visitor_symbol_unique").on(
-      table.visitorId,
-      table.symbol
-    ),
-  ]
+  (table) => [index("holdings_visitor_id_idx").on(table.visitorId)]
 );
 
 export const safetyAttempts = pgTable(

@@ -71,6 +71,10 @@ export interface StockHistoryPoint {
   /** ISO timestamp. */
   t: string;
   close: number;
+  /** Open/high/low — present for daily ranges; used by the candlestick view. */
+  open?: number;
+  high?: number;
+  low?: number;
 }
 
 export type VolatilityLabel = "low" | "moderate" | "high";
@@ -167,6 +171,9 @@ const chartSchema = z.object({
                     z
                       .object({
                         close: z.array(z.number().nullable()).optional(),
+                        open: z.array(z.number().nullable()).optional(),
+                        high: z.array(z.number().nullable()).optional(),
+                        low: z.array(z.number().nullable()).optional(),
                       })
                       .passthrough()
                   )
@@ -290,7 +297,13 @@ function parseChart(data: unknown): z.infer<typeof chartSchema>["chart"]["result
 
 function chartSeries(result: ChartResult): StockHistoryPoint[] {
   const timestamps = result.timestamp ?? [];
-  const closes = result.indicators?.quote?.[0]?.close ?? [];
+  const quote = result.indicators?.quote?.[0];
+  const closes = quote?.close ?? [];
+  const opens = quote?.open ?? [];
+  const highs = quote?.high ?? [];
+  const lows = quote?.low ?? [];
+  const finite = (value: number | null | undefined): number | undefined =>
+    typeof value === "number" && Number.isFinite(value) ? value : undefined;
   const points: StockHistoryPoint[] = [];
   for (let i = 0; i < closes.length; i += 1) {
     const close = closes[i];
@@ -300,7 +313,13 @@ function chartSeries(result: ChartResult): StockHistoryPoint[] {
       Number.isFinite(close) &&
       typeof ts === "number"
     ) {
-      points.push({ t: new Date(ts * 1_000).toISOString(), close });
+      points.push({
+        t: new Date(ts * 1_000).toISOString(),
+        close,
+        open: finite(opens[i]),
+        high: finite(highs[i]),
+        low: finite(lows[i]),
+      });
     }
   }
   return points;
@@ -520,14 +539,32 @@ export function getTrending(): Promise<TrendingFeed> {
 // Search
 // ---------------------------------------------------------------------------
 
+function scoreEntry(symbol: string, name: string, needle: string): number {
+  const s = symbol.toLowerCase();
+  const n = name.toLowerCase();
+  if (s === needle) return 100;
+  if (s.startsWith(needle)) return 85;
+  if (n.startsWith(needle)) return 65;
+  if (n.split(/\s+/).some((word) => word.startsWith(needle))) return 45;
+  if (s.includes(needle)) return 30;
+  if (n.includes(needle)) return 20;
+  return 0;
+}
+
 function matchUniverse(query: string): StockSearchResult[] {
   const needle = query.trim().toLowerCase();
   if (!needle) return [];
-  return UNIVERSE.filter(
-    (entry) =>
-      entry.symbol.toLowerCase().includes(needle) ||
-      entry.name.toLowerCase().includes(needle)
-  ).map((entry) => ({ symbol: entry.symbol, name: entry.name, sector: null }));
+  return UNIVERSE.map((entry) => ({
+    entry,
+    score: scoreEntry(entry.symbol, entry.name, needle),
+  }))
+    .filter((row) => row.score > 0)
+    .sort((a, b) => b.score - a.score || a.entry.name.localeCompare(b.entry.name))
+    .map((row) => ({
+      symbol: row.entry.symbol,
+      name: row.entry.name,
+      sector: null,
+    }));
 }
 
 export async function searchStocks(query: string): Promise<StockSearchResult[]> {
@@ -535,6 +572,7 @@ export async function searchStocks(query: string): Promise<StockSearchResult[]> 
   if (!trimmed) return [];
   const key = `market:search:${trimmed.toLowerCase()}`;
   return cached(key, SEARCH_TTL_MS, async () => {
+    const needle = trimmed.toLowerCase();
     const local = matchUniverse(trimmed);
     try {
       const data = await yahooJson(
@@ -545,21 +583,32 @@ export async function searchStocks(query: string): Promise<StockSearchResult[]> 
         throw new MarketError("upstream", "Unexpected search payload from Yahoo");
       }
       const seen = new Set(local.map((entry) => entry.symbol));
-      const remote: StockSearchResult[] = [];
+      const scored: { result: StockSearchResult; score: number }[] = local.map(
+        (entry) => ({
+          result: entry,
+          score: scoreEntry(entry.symbol, entry.name, needle),
+        })
+      );
       for (const item of parsed.data.quotes ?? []) {
         if (item.exchDisp !== "NSE") continue;
         if (item.quoteType && item.quoteType !== "EQUITY") continue;
         const symbol = item.symbol.replace(/\.NS$/, "");
         if (!symbol || seen.has(symbol)) continue;
         seen.add(symbol);
-        remote.push({
-          symbol,
-          name: item.longname ?? item.shortname ?? symbol,
-          sector: item.sector ?? null,
+        const name = item.longname ?? item.shortname ?? symbol;
+        scored.push({
+          result: { symbol, name, sector: item.sector ?? null },
+          score: scoreEntry(symbol, name, needle),
         });
-        if (remote.length >= 8) break;
+        if (scored.length >= 16) break;
       }
-      return [...local, ...remote].slice(0, 8);
+      return scored
+        .sort(
+          (a, b) =>
+            b.score - a.score || a.result.name.localeCompare(b.result.name)
+        )
+        .slice(0, 8)
+        .map((row) => row.result);
     } catch (error) {
       // Yahoo search down → degrade to the curated universe match.
       if (local.length > 0) return local;

@@ -1,57 +1,58 @@
 "use client";
 
-import * as React from "react";
-import { Loader2, Square, Volume2 } from "lucide-react";
+import { Loader2, Pause, Play, Volume2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { speakText, stopSpeaking } from "@/lib/voice/client";
+import {
+  pauseSpeech,
+  resumeSpeech,
+  speak,
+  stopSpeech,
+  useSpeech,
+} from "@/lib/voice/speech";
 import { cn } from "@/lib/cn";
 
-/** Reads a piece of text aloud via the backend TTS; toggles to stop. */
+/**
+ * Reads a piece of text aloud. While playing it becomes a Pause button; when
+ * paused it becomes Play (resume). Multiple instances coordinate through the
+ * shared speech store (`id` identifies which utterance this button owns).
+ */
 export function SpeakButton({
+  id,
   text,
   className,
 }: {
+  id: string;
   text: string;
   className?: string;
 }) {
   const t = useTranslations("voice");
-  const [state, setState] = React.useState<"idle" | "loading" | "playing">(
-    "idle"
-  );
-  const runRef = React.useRef(0);
+  const speech = useSpeech();
+  const active = speech.id === id;
+  const status = active ? speech.status : "idle";
 
-  React.useEffect(
-    () => () => {
-      runRef.current += 1;
-      stopSpeaking();
-    },
-    []
-  );
-
-  const toggle = React.useCallback(async () => {
-    if (state === "loading" || state === "playing") {
-      runRef.current += 1;
-      stopSpeaking();
-      setState("idle");
+  const onClick = () => {
+    if (!active) {
+      void speak(id, text);
       return;
     }
-    const id = ++runRef.current;
-    setState("loading");
-    try {
-      await speakText(text);
-      if (runRef.current === id) setState("idle");
-    } catch {
-      if (runRef.current === id) setState("idle");
-    }
-  }, [state, text]);
+    if (status === "playing") pauseSpeech();
+    else if (status === "paused") resumeSpeech();
+    else if (status === "loading") stopSpeech();
+  };
 
   const label =
-    state === "idle" ? t("speakAria") : t("stopSpeakingAria");
+    status === "playing"
+      ? t("pauseAria")
+      : status === "paused"
+        ? t("resumeAria")
+        : status === "loading"
+          ? t("stopSpeakingAria")
+          : t("speakAria");
 
   return (
     <button
       type="button"
-      onClick={() => void toggle()}
+      onClick={onClick}
       aria-label={label}
       title={label}
       className={cn(
@@ -59,10 +60,12 @@ export function SpeakButton({
         className
       )}
     >
-      {state === "loading" ? (
+      {status === "loading" ? (
         <Loader2 className="size-3.5 animate-spin" aria-hidden />
-      ) : state === "playing" ? (
-        <Square className="size-3 fill-current" aria-hidden />
+      ) : status === "playing" ? (
+        <Pause className="size-3.5 fill-current" aria-hidden />
+      ) : status === "paused" ? (
+        <Play className="size-3.5 fill-current" aria-hidden />
       ) : (
         <Volume2 className="size-4" aria-hidden />
       )}

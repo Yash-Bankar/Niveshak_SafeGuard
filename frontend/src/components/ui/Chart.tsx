@@ -3,7 +3,10 @@
 import {
   Area,
   AreaChart,
+  Bar,
   CartesianGrid,
+  ComposedChart,
+  Line,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -76,6 +79,8 @@ export interface PriceChartProps {
   formatTooltipTime: (iso: string) => string;
   /** Accessible name for the chart region (translate at call site). */
   ariaLabel: string;
+  /** Series style: area (default), line, or bar. */
+  type?: "area" | "line" | "bar";
   className?: string;
 }
 
@@ -91,16 +96,17 @@ export function PriceChart({
   formatTick,
   formatTooltipTime,
   ariaLabel,
+  type = "area",
   className,
 }: PriceChartProps) {
   return (
     <div
-      className={cn("h-[260px] w-full", className)}
+      className={cn("h-[260px] w-full lg:h-[380px]", className)}
       role="img"
       aria-label={ariaLabel}
     >
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 4 }}>
+        <ComposedChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 4 }}>
           <defs>
             <linearGradient id="price-fill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -156,21 +162,39 @@ export function PriceChart({
             stroke="rgba(255,255,255,0.18)"
             strokeDasharray="4 4"
           />
-          <Area
-            type="monotone"
-            dataKey="close"
-            stroke="#3b82f6"
-            strokeWidth={2.25}
-            fill="url(#price-fill)"
-            dot={false}
-            activeDot={{
-              r: 4,
-              fill: "#3b82f6",
-              stroke: "#0b0c0e",
-              strokeWidth: 2,
-            }}
-          />
-        </AreaChart>
+          {type === "area" ? (
+            <Area
+              type="monotone"
+              dataKey="close"
+              stroke="#3b82f6"
+              strokeWidth={2.25}
+              fill="url(#price-fill)"
+              dot={false}
+              activeDot={{
+                r: 4,
+                fill: "#3b82f6",
+                stroke: "#0b0c0e",
+                strokeWidth: 2,
+              }}
+            />
+          ) : type === "line" ? (
+            <Line
+              type="monotone"
+              dataKey="close"
+              stroke="#3b82f6"
+              strokeWidth={2.25}
+              dot={false}
+              activeDot={{
+                r: 4,
+                fill: "#3b82f6",
+                stroke: "#0b0c0e",
+                strokeWidth: 2,
+              }}
+            />
+          ) : (
+            <Bar dataKey="close" fill="#3b82f6" maxBarSize={16} radius={[3, 3, 0, 0]} />
+          )}
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   );

@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Each add is a new lot — the same stock can be bought at several prices.
   await db
     .insert(holdings)
     .values({
@@ -113,14 +114,6 @@ export async function POST(request: NextRequest) {
       symbol: body.data.symbol,
       quantity: body.data.quantity,
       buyPrice: body.data.buyPrice,
-    })
-    .onConflictDoUpdate({
-      target: [holdings.visitorId, holdings.symbol],
-      set: {
-        quantity: body.data.quantity,
-        buyPrice: body.data.buyPrice,
-        boughtAt: new Date(),
-      },
     });
 
   // Portfolio is a FOMO signal — recompute best-effort.

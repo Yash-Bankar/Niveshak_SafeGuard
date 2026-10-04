@@ -18,7 +18,14 @@ import { cn } from "@/lib/cn";
  * Pass `stay` (used on the Profile page) to keep the user on the current
  * path instead — same behaviour as the TopBar switcher.
  */
-export function LanguageCards({ stay = false }: { stay?: boolean }) {
+export function LanguageCards({
+  stay = false,
+  variant = "stack",
+}: {
+  stay?: boolean;
+  /** "grid" lays the three cards side-by-side on sm+ (select-language page). */
+  variant?: "stack" | "grid";
+}) {
   const t = useTranslations("language");
   const router = useRouter();
   const pathname = usePathname();
@@ -36,7 +43,14 @@ export function LanguageCards({ stay = false }: { stay?: boolean }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4">
+    <div
+      className={cn(
+        "w-full",
+        variant === "grid"
+          ? "grid gap-4 sm:grid-cols-3"
+          : "flex flex-col gap-4"
+      )}
+    >
       {LOCALES.map((locale) => {
         const isPending = pending === locale;
         const disabled = pending !== null;
@@ -49,7 +63,7 @@ export function LanguageCards({ stay = false }: { stay?: boolean }) {
             disabled={disabled}
             lang={locale}
             className={cn(
-              "glass group flex items-center justify-between gap-4 rounded-3xl p-6 text-left transition-all duration-300",
+              "glass group flex h-full items-center justify-between gap-4 rounded-3xl p-6 text-left transition-all duration-300",
               "hover:-translate-y-1 hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
               "disabled:opacity-60"
             )}

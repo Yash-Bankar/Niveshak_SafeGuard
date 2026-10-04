@@ -1,0 +1,1 @@
+DROP INDEX "holdings_visitor_symbol_unique";

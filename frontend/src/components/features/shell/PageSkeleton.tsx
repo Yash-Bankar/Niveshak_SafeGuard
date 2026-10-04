@@ -18,7 +18,7 @@ export function PageSkeleton() {
     <div
       role="status"
       aria-label={t("loading")}
-      className="mx-auto w-full max-w-4xl px-4 py-8 md:py-10"
+      className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 md:py-10"
     >
       <Skeleton className="h-8 w-48" />
       <Skeleton className="mt-3 h-4 w-72 max-w-full" />

@@ -17,7 +17,15 @@ export async function GET(request: NextRequest) {
   if ("response" in auth) return auth.response;
 
   const rows = await db
-    .select({ fomo_score: fomoProfiles.fomoScore, band: fomoProfiles.band })
+    .select({
+      fomo_score: fomoProfiles.fomoScore,
+      band: fomoProfiles.band,
+      base_score: fomoProfiles.baseScore,
+      signal_language: fomoProfiles.signalLanguage,
+      signal_returns: fomoProfiles.signalReturns,
+      signal_portfolio: fomoProfiles.signalPortfolio,
+      updated_at: fomoProfiles.updatedAt,
+    })
     .from(fomoProfiles)
     .where(eq(fomoProfiles.visitorId, auth.visitorId))
     .limit(1);

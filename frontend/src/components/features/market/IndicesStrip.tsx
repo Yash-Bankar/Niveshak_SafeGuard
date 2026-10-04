@@ -71,11 +71,11 @@ export function IndicesStrip({
   }
 
   return (
-    <div className={cn("flex gap-3 overflow-x-auto pb-1", className)}>
+    <div className={cn("flex gap-3 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0", className)}>
       {rows.map((row) => (
         <div
           key={row.yahoo}
-          className="flex min-w-[168px] flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3"
+          className="flex min-w-[168px] flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 lg:min-w-0"
         >
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs text-white/50">{row.symbol}</p>

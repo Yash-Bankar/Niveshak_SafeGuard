@@ -84,17 +84,66 @@ export type ScanSummaryPayload = z.infer<typeof scanSummarySchema>;
 export const quizSubmitRequestSchema = z.object({
   answers: z.array(quizAnswerSchema).min(1).max(10),
   ticker: z.string().regex(/^[A-Z0-9&-]{1,20}$/),
+  locale: z.enum(["en", "hi", "mr"]),
   quizId: z.string().min(1).max(64).optional(),
   tipSource: z.string().trim().min(1).max(200).optional(),
   scanSummary: scanSummarySchema.optional(),
 });
 export type QuizSubmitRequest = z.infer<typeof quizSubmitRequestSchema>;
 
+/** One graded question from the backend's `/quiz/submit` (text only). */
+export interface QuizPerQuestion {
+  id: string;
+  correct: boolean;
+  your_answer: string;
+  correct_answer: string;
+  explanation: string;
+}
+
+/** The AI verdict conclusion (already in the user's language). */
+export interface QuizConclusion {
+  headline: string;
+  summary: string;
+  strengths: string[];
+  risks: string[];
+  next_steps: string[];
+  mini_lesson: { title: string; body: string };
+}
+
+/** One weak area from `/quiz/submit`. */
+export interface QuizGap {
+  category: string;
+  correct: number;
+  total: number;
+  what_to_learn: string[];
+}
+
+/** One question review entry from `/quiz/submit`. */
+export interface QuizFeedback {
+  category: string;
+  question: string;
+  user_answer: string;
+  correct_answer: string;
+  is_correct: boolean;
+  explanation: string;
+}
+
 export interface QuizSubmitResult {
   score: number;
   total: number;
   eligible: boolean;
   correct_answers: string[];
+  /** New `/quiz/submit` shape. */
+  percentage?: number;
+  level?: string;
+  verdict?: string;
+  strengths?: string[];
+  gaps?: QuizGap[];
+  feedback?: QuizFeedback[];
+  /** Legacy shape (kept for compatibility). */
+  per_question?: QuizPerQuestion[];
+  conclusion?: QuizConclusion;
+  verdict_title?: string;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -219,10 +268,137 @@ function firstNonEmptyString(value: unknown): string | undefined {
     : undefined;
 }
 
+function toStringArray(raw: unknown): string[] {
+  return Array.isArray(raw)
+    ? raw
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0)
+    : [];
+}
+
+function normalizeConclusion(raw: unknown): QuizConclusion | null {
+  const record = asRecord(raw);
+  if (!record) return null;
+
+  const headline =
+    firstNonEmptyString(record.headline) ?? firstNonEmptyString(record.title) ?? "";
+  const summary =
+    firstNonEmptyString(record.summary) ?? firstNonEmptyString(record.body) ?? "";
+  const strengths = toStringArray(record.strengths);
+  const risks = toStringArray(record.risks);
+  const nextStepsDirect = toStringArray(record.next_steps);
+  const next_steps =
+    nextStepsDirect.length > 0 ? nextStepsDirect : toStringArray(record.nextSteps);
+  const lesson =
+    asRecord(record.mini_lesson) ?? asRecord(record.miniLesson) ?? null;
+  const mini_lesson = lesson
+    ? {
+        title: firstNonEmptyString(lesson.title) ?? "",
+        body:
+          firstNonEmptyString(lesson.body) ??
+          firstNonEmptyString(lesson.summary) ??
+          "",
+      }
+    : { title: "", body: "" };
+
+  const empty =
+    !headline &&
+    !summary &&
+    strengths.length === 0 &&
+    risks.length === 0 &&
+    next_steps.length === 0 &&
+    !mini_lesson.title &&
+    !mini_lesson.body;
+  if (empty) return null;
+
+  return { headline, summary, strengths, risks, next_steps, mini_lesson };
+}
+
+function normalizePerQuestion(
+  raw: unknown,
+  correctAnswers: string[]
+): QuizPerQuestion[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const rows: QuizPerQuestion[] = [];
+  raw.forEach((item, index) => {
+    const record = asRecord(item);
+    if (!record) return;
+    const your_answer =
+      firstNonEmptyString(record.your_answer) ??
+      firstNonEmptyString(record.selected_option) ??
+      firstNonEmptyString(record.answer) ??
+      "";
+    const correct_answer =
+      firstNonEmptyString(record.correct_answer) ??
+      firstNonEmptyString(record.answer_key) ??
+      correctAnswers[index] ??
+      "";
+    const explanation =
+      firstNonEmptyString(record.explanation) ?? firstNonEmptyString(record.detail) ?? "";
+    const id =
+      firstNonEmptyString(record.id) ??
+      firstNonEmptyString(record.question_id) ??
+      String(index + 1);
+    const correct =
+      typeof record.correct === "boolean"
+        ? record.correct
+        : Boolean(
+            correct_answer &&
+              your_answer &&
+              your_answer.toUpperCase() === correct_answer.toUpperCase()
+          );
+    rows.push({ id, correct, your_answer, correct_answer, explanation });
+  });
+  return rows.length > 0 ? rows : undefined;
+}
+
+function normalizeGaps(raw: unknown): QuizGap[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const gaps: QuizGap[] = [];
+  for (const item of raw) {
+    const record = asRecord(item);
+    if (!record) continue;
+    const category =
+      firstNonEmptyString(record.category) ?? firstNonEmptyString(record.topic);
+    if (!category) continue;
+    gaps.push({
+      category,
+      correct: typeof record.correct === "number" ? Math.round(record.correct) : 0,
+      total: typeof record.total === "number" ? Math.round(record.total) : 0,
+      what_to_learn: toStringArray(
+        record.what_to_learn ?? record.whatToLearn
+      ),
+    });
+  }
+  return gaps.length > 0 ? gaps : undefined;
+}
+
+function normalizeFeedback(raw: unknown): QuizFeedback[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const feedback: QuizFeedback[] = [];
+  for (const item of raw) {
+    const record = asRecord(item);
+    if (!record) continue;
+    const question = firstNonEmptyString(record.question) ?? "";
+    const explanation = firstNonEmptyString(record.explanation) ?? "";
+    if (!question && !explanation) continue;
+    feedback.push({
+      category: firstNonEmptyString(record.category) ?? "",
+      question,
+      user_answer: firstNonEmptyString(record.user_answer) ?? "",
+      correct_answer: firstNonEmptyString(record.correct_answer) ?? "",
+      is_correct: record.is_correct === true,
+      explanation,
+    });
+  }
+  return feedback.length > 0 ? feedback : undefined;
+}
+
 /**
  * Normalize an untyped POST /quiz/submit 200 body. `score` is required;
- * `total` falls back to the answered count, `eligible` to the 60 % rule,
- * `correct_answers` to [] when missing or not A–D letters.
+ * captures the new shape (level/verdict/strengths/gaps/feedback/percentage)
+ * and the legacy shape (per_question/conclusion) when present.
  */
 export function normalizeQuizSubmit(
   raw: unknown,
@@ -249,5 +425,44 @@ export function normalizeQuizSubmit(
         : null
     )
     .filter((value): value is string => value !== null);
-  return { score, total, eligible, correct_answers };
+
+  const container = asRecord(root.result) ?? asRecord(root.data) ?? root;
+  const per_question = normalizePerQuestion(
+    root.per_question ?? container.per_question,
+    correct_answers
+  );
+  const conclusion = normalizeConclusion(
+    root.conclusion ?? container.conclusion
+  );
+  const verdict_title =
+    firstNonEmptyString(root.verdict_title) ??
+    firstNonEmptyString(container.verdict_title);
+
+  const percentage =
+    typeof root.percentage === "number" && Number.isFinite(root.percentage)
+      ? root.percentage
+      : undefined;
+  const level =
+    firstNonEmptyString(root.level) ?? firstNonEmptyString(container.level);
+  const verdict =
+    firstNonEmptyString(root.verdict) ?? firstNonEmptyString(container.verdict);
+  const strengths = toStringArray(root.strengths ?? container.strengths);
+  const gaps = normalizeGaps(root.gaps ?? container.gaps);
+  const feedback = normalizeFeedback(root.feedback ?? container.feedback);
+
+  return {
+    score,
+    total,
+    eligible,
+    correct_answers,
+    ...(percentage !== undefined ? { percentage } : {}),
+    ...(level ? { level } : {}),
+    ...(verdict ? { verdict } : {}),
+    ...(strengths.length > 0 ? { strengths } : {}),
+    ...(gaps ? { gaps } : {}),
+    ...(feedback ? { feedback } : {}),
+    ...(per_question ? { per_question } : {}),
+    ...(conclusion ? { conclusion } : {}),
+    ...(verdict_title ? { verdict_title } : {}),
+  };
 }

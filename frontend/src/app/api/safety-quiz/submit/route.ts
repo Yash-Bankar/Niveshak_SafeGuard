@@ -74,13 +74,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { answers, ticker, quizId, tipSource, scanSummary } = parsed.data;
+  const { answers, ticker, locale, quizId, tipSource, scanSummary } = parsed.data;
   const fomo = await loadFomo(visitorId);
 
   try {
     const graded = await safetyQuizSubmit({
       sessionId: visitorId,
       answers,
+      locale,
       quizId: quizId ?? null,
       tipSource: tipSource ?? null,
       scanSummary: scanSummary ?? null,
@@ -106,11 +107,29 @@ export async function POST(request: NextRequest) {
         answers,
         score: graded.score,
         total: graded.total,
-        verdictCode: verdict,
-        result: {
-          eligible: graded.eligible,
-          correct_answers: graded.correct_answers,
-        },
+        // Prefer the API's own level/verdict (new shape); fall back to an
+        // older conclusion payload or the compact quiz-only shape.
+        verdictCode: graded.level ?? verdict,
+        result: graded.level
+          ? {
+              level: graded.level,
+              verdict: graded.verdict ?? "",
+              strengths: graded.strengths ?? [],
+              gaps: graded.gaps ?? [],
+              feedback: graded.feedback ?? [],
+              percentage: graded.percentage ?? null,
+            }
+          : graded.conclusion
+            ? {
+                per_question: graded.per_question ?? [],
+                conclusion: graded.conclusion,
+                verdict_title:
+                  graded.verdict_title ?? graded.conclusion.headline,
+              }
+            : {
+                eligible: graded.eligible,
+                correct_answers: graded.correct_answers,
+              },
       })
       .returning({ id: safetyAttempts.id });
 

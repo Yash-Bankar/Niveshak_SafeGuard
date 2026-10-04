@@ -3,12 +3,13 @@ import { and, eq } from "drizzle-orm";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { db } from "@/db";
-import { watchlist } from "@/db/schema";
+import { watchlist, holdings } from "@/db/schema";
 import { Disclaimer } from "@/components/features/Disclaimer";
 import { SearchBar } from "@/components/features/market/SearchBar";
 import { RetryButton } from "@/components/features/stock/RetryButton";
 import { StockView } from "@/components/features/stock/StockView";
 import { buttonVariants } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
 import { getStockDetail, type StockDetail } from "@/lib/market";
 import { MarketError } from "@/lib/market/yahoo";
 import { getVisitorId } from "@/lib/visitor";
@@ -106,6 +107,8 @@ export default async function StockPage({
   }
 
   let initialWatched = false;
+  let holding: { quantity: number; buyPrice: number; lots: number } | null =
+    null;
   try {
     const visitorId = await getVisitorId();
     if (visitorId) {
@@ -117,15 +120,42 @@ export default async function StockPage({
         )
         .limit(1);
       initialWatched = rows.length > 0;
+
+      const holdingRows = await db
+        .select({
+          quantity: holdings.quantity,
+          buyPrice: holdings.buyPrice,
+        })
+        .from(holdings)
+        .where(
+          and(eq(holdings.visitorId, visitorId), eq(holdings.symbol, upper))
+        );
+      if (holdingRows.length > 0) {
+        const totalQty = holdingRows.reduce((sum, row) => sum + row.quantity, 0);
+        const totalCost = holdingRows.reduce(
+          (sum, row) => sum + row.quantity * row.buyPrice,
+          0
+        );
+        holding = {
+          quantity: totalQty,
+          buyPrice: totalQty > 0 ? totalCost / totalQty : 0,
+          lots: holdingRows.length,
+        };
+      }
     }
   } catch {
     initialWatched = false;
+    holding = null;
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 pb-36 pt-6 md:pb-28 md:pt-8">
-      <StockView initial={detail} initialWatched={initialWatched} />
+    <Container className="pb-36 pt-6 md:pb-28 md:pt-8 lg:pb-12">
+      <StockView
+        initial={detail}
+        initialWatched={initialWatched}
+        holding={holding}
+      />
       <Disclaimer className="mt-8" />
-    </div>
+    </Container>
   );
 }

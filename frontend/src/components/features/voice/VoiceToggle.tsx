@@ -3,7 +3,7 @@
 import { Volume2, VolumeX } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
-import { stopSpeaking } from "@/lib/voice/client";
+import { stopSpeech } from "@/lib/voice/speech";
 import { useVoiceMuted, setVoiceMuted } from "@/lib/voice/settings";
 
 /** Mute/unmute the auto-read quiz narration; stops any playing audio on mute. */
@@ -14,7 +14,7 @@ export function VoiceToggle({ className }: { className?: string }) {
   const toggle = () => {
     const next = !muted;
     setVoiceMuted(next);
-    if (next) stopSpeaking();
+    if (next) stopSpeech();
   };
 
   const label = muted ? t("unmuteAria") : t("muteAria");

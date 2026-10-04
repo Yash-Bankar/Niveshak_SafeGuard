@@ -62,18 +62,40 @@ export async function recomputeFomo(
   }
 
   // Holdings are the portfolio when present; otherwise the watchlist stands in.
-  let holdingSymbols: string[] = [];
+  let holdingRows: {
+    symbol: string;
+    quantity: number;
+    buyPrice: number;
+  }[] = [];
   try {
-    holdingSymbols = (
-      await db
-        .select({ symbol: holdings.symbol })
-        .from(holdings)
-        .where(eq(holdings.visitorId, visitorId))
-        .limit(MAX_SYMBOLS)
-    ).map((row) => row.symbol);
+    holdingRows = await db
+      .select({
+        symbol: holdings.symbol,
+        quantity: holdings.quantity,
+        buyPrice: holdings.buyPrice,
+      })
+      .from(holdings)
+      .where(eq(holdings.visitorId, visitorId));
   } catch {
-    holdingSymbols = [];
+    holdingRows = [];
   }
+
+  // A stock can have several lots — collapse them into one position.
+  const holdingBySymbol = new Map<
+    string,
+    { symbol: string; qty: number; cost: number }
+  >();
+  for (const row of holdingRows) {
+    const position = holdingBySymbol.get(row.symbol) ?? {
+      symbol: row.symbol,
+      qty: 0,
+      cost: 0,
+    };
+    position.qty += row.quantity;
+    position.cost += row.quantity * row.buyPrice;
+    holdingBySymbol.set(row.symbol, position);
+  }
+  const holdingPositions = [...holdingBySymbol.values()].slice(0, MAX_SYMBOLS);
 
   let watchSymbols: string[] = [];
   try {
@@ -88,14 +110,17 @@ export async function recomputeFomo(
     watchSymbols = [];
   }
 
-  const hasHoldings = holdingSymbols.length > 0;
+  const hasHoldings = holdingPositions.length > 0;
   const marketSymbols = (
-    hasHoldings ? holdingSymbols : watchSymbols
+    hasHoldings ? holdingPositions.map((position) => position.symbol) : watchSymbols
   ).slice(0, MAX_SYMBOLS);
 
   // Signals 2 + 3 need per-symbol market data (best-effort per symbol).
   const markets: HoldingMarket[] = [];
-  const sectors: (string | null)[] = [];
+  const detailBySymbol = new Map<
+    string,
+    { price: number | null; sector: string | null }
+  >();
   for (const symbol of marketSymbols) {
     try {
       const detail = await getStockDetail(symbol, "1Y");
@@ -119,17 +144,26 @@ export async function recomputeFomo(
         rsi: computeRsi(closes),
         return1M,
       });
-      sectors.push(detail.sector);
+      detailBySymbol.set(symbol, { price: detail.price, sector: detail.sector });
     } catch {
-      sectors.push(null);
+      detailBySymbol.set(symbol, { price: null, sector: null });
     }
   }
 
   const language = languageSignal(messages);
   const returns = returnsHeat(markets);
   const portfolio = portfolioSignal({
-    holdingsCount: holdingSymbols.length,
-    sectors,
+    holdings: holdingPositions.map((position) => {
+      const detail = detailBySymbol.get(position.symbol);
+      // Value by live price, falling back to the average buy price so
+      // concentration still works when the market feed is unavailable.
+      const unit =
+        detail?.price ?? (position.qty > 0 ? position.cost / position.qty : 0);
+      return {
+        value: unit * position.qty,
+        sector: detail?.sector ?? null,
+      };
+    }),
     watchlistCount: watchSymbols.length,
   });
 

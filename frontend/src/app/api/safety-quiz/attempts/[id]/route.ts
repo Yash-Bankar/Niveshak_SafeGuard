@@ -23,7 +23,7 @@ export async function GET(
       );
     }
     return NextResponse.json(
-      { attempt },
+      { attempt, result: attempt.result },
       { headers: { "cache-control": "no-store" } }
     );
   } catch {

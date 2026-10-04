@@ -10,8 +10,10 @@ import { Button, buttonVariants } from "@/components/ui/Button";
 import type { PublicFomoQuestion } from "@/lib/fomo";
 import { asFomoBand, bandMeta } from "@/lib/fomo-bands";
 import { useFomoStore } from "@/lib/stores/fomo";
-import { buildNarration } from "@/lib/voice/speech-text";
+import { narrationSegments } from "@/lib/voice/speech-text";
+import { useSpeech } from "@/lib/voice/speech";
 import { NarrationControls } from "@/components/features/voice/NarrationControls";
+import { HighlightedText } from "@/components/features/voice/HighlightedText";
 import { cn } from "@/lib/cn";
 
 const STORAGE_KEY = "sg_fomo_quiz_v1";
@@ -57,6 +59,7 @@ export function FomoQuiz({ questions }: { questions: PublicFomoQuestion[] }) {
   const t = useTranslations("fomo");
   const reduceMotion = useReducedMotion();
   const setProfile = useFomoStore((state) => state.setProfile);
+  const speech = useSpeech();
 
   const [step, setStep] = React.useState(0);
   const [answers, setAnswers] = React.useState<Array<number | null>>(() =>
@@ -237,15 +240,22 @@ export function FomoQuiz({ questions }: { questions: PublicFomoQuestion[] }) {
   }
 
   const progress = ((step + 1) / questions.length) * 100;
+  const optionViews = current
+    ? current.options.map((option) => ({
+        label: option.id.toUpperCase(),
+        text: t(option.labelKey),
+      }))
+    : [];
   const narration = current
-    ? buildNarration(
-        t(current.labelKey),
-        current.options.map((option) => ({
-          label: option.id.toUpperCase(),
-          text: t(option.labelKey),
-        }))
-      )
-    : "";
+    ? narrationSegments(t(current.labelKey), optionViews)
+    : null;
+  const narrationId = `fomo-q${step}`;
+  const speaking =
+    speech.id === narrationId &&
+    (speech.status === "playing" || speech.status === "paused");
+  const segmentByKey = new Map(
+    (narration?.segments ?? []).map((segment) => [segment.key, segment])
+  );
 
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8 md:py-10">
@@ -269,14 +279,25 @@ export function FomoQuiz({ questions }: { questions: PublicFomoQuestion[] }) {
             />
           </div>
         </div>
-        <NarrationControls narration={narration} active={phase === "quiz"} />
+        <NarrationControls
+          id={narrationId}
+          narration={narration?.text ?? ""}
+          active={phase === "quiz"}
+        />
       </div>
 
       <h1 className="mt-5 text-xl font-bold tracking-tight md:text-2xl">
         {t("quizTitle")}
       </h1>
       <p className="mt-4 text-lg font-medium leading-snug text-white/90">
-        {t(current.labelKey)}
+        {speaking && narration ? (
+          <HighlightedText
+            text={narration.segments[0].text}
+            activeWord={speech.wordIndex - narration.segments[0].startWord}
+          />
+        ) : (
+          t(current.labelKey)
+        )}
       </p>
 
       <div className="mt-4 flex flex-col gap-2.5">
@@ -310,7 +331,17 @@ export function FomoQuiz({ questions }: { questions: PublicFomoQuestion[] }) {
                 {option.id.toUpperCase()}
               </span>
               <span className="text-sm leading-snug text-white/90">
-                {t(option.labelKey)}
+                {(() => {
+                  const segment = segmentByKey.get(option.id.toUpperCase());
+                  return speaking && segment ? (
+                    <HighlightedText
+                      text={segment.text}
+                      activeWord={speech.wordIndex - segment.startWord}
+                    />
+                  ) : (
+                    t(option.labelKey)
+                  );
+                })()}
               </span>
             </button>
           );

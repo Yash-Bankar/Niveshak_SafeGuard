@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildNarration, toSpeechText } from "./speech-text";
+import { buildNarration, narrationSegments, toSpeechText } from "./speech-text";
 
 describe("toSpeechText", () => {
   it("strips markdown so TTS reads words, not syntax", () => {
@@ -35,5 +35,20 @@ describe("buildNarration", () => {
         { label: "B", text: "" },
       ])
     ).toBe("Pick > 1%. A. 1%");
+  });
+});
+
+describe("narrationSegments", () => {
+  it("marks the start word of each segment", () => {
+    const { text, segments } = narrationSegments("What is risk?", [
+      { label: "A", text: "Swings" },
+      { label: "B", text: "Fixed" },
+    ]);
+    expect(text).toBe("What is risk?. A. Swings. B. Fixed");
+    expect(segments[0]).toEqual({ key: "q", text: "What is risk?", startWord: 0 });
+    // "A." occupies 1 word (index 3), so option A's text starts at word 4.
+    expect(segments[1]).toEqual({ key: "A", text: "Swings", startWord: 4 });
+    expect(segments[2].key).toBe("B");
+    expect(segments[2].startWord).toBe(6);
   });
 });

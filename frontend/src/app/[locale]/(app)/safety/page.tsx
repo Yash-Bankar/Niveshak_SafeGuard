@@ -3,22 +3,18 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { buttonVariants } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
 import { Disclaimer } from "@/components/features/Disclaimer";
+import { FomoSummaryCard } from "@/components/features/safety/FomoSummaryCard";
+import { SearchBar } from "@/components/features/market/SearchBar";
 import { StockLogo } from "@/components/features/market/StockLogo";
 import { formatDate } from "@/lib/format";
 import { listAttempts, type AttemptSummary } from "@/lib/safety";
 import { getVisitorId } from "@/lib/visitor";
+import { toneForLevel } from "@/lib/verdict-tone";
 import { cn } from "@/lib/cn";
 
 export const dynamic = "force-dynamic";
-
-function verdictVariant(
-  verdict: string
-): "positive" | "warning" | "negative" {
-  if (verdict === "INFORMED") return "positive";
-  if (verdict === "SPECULATIVE") return "negative";
-  return "warning";
-}
 
 /** Safety history (Phase 7: minimal quiz-attempt list). */
 export default async function SafetyPage({
@@ -42,7 +38,7 @@ export default async function SafetyPage({
   const t = await getTranslations("safety");
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8 md:py-10">
+    <Container className="py-8 md:py-10">
       <div>
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
           {t("title")}
@@ -50,62 +46,84 @@ export default async function SafetyPage({
         <p className="mt-1 text-sm text-white/50">{t("subtitle")}</p>
       </div>
 
-      <h2 className="mt-8 text-xs font-medium uppercase tracking-wider text-white/40">
-        {t("historyTitle")}
-      </h2>
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <aside className="lg:order-2 lg:sticky lg:top-20 lg:self-start">
+          <FomoSummaryCard />
+        </aside>
 
-      {attempts.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center gap-4 rounded-3xl border border-dashed border-white/15 px-6 py-12 text-center">
-          <History aria-hidden className="size-7 text-white/30" />
-          <p className="max-w-sm text-sm text-white/50">{t("emptyHistory")}</p>
-          <Link href="/markets" className={buttonVariants({ variant: "secondary" })}>
-            <Search className="size-4" aria-hidden />
-            {t("history.emptyCta")}
-          </Link>
-        </div>
-      ) : (
-        <ul className="mt-4 space-y-3">
-          {attempts.map((attempt) => (
-            <li key={attempt.id}>
+        <div className="lg:order-1 lg:col-span-2">
+          <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-white/40">
+            {t("history.startLabel")}
+          </h2>
+          <div data-tour="safety-search">
+            <SearchBar />
+          </div>
+
+          <h2 className="mt-8 text-xs font-medium uppercase tracking-wider text-white/40">
+            {t("historyTitle")}
+          </h2>
+
+          <div data-tour="safety-list">
+          {attempts.length === 0 ? (
+            <div className="mt-4 flex flex-col items-center gap-4 rounded-3xl border border-dashed border-white/15 px-6 py-12 text-center">
+              <History aria-hidden className="size-7 text-white/30" />
+              <p className="max-w-sm text-sm text-white/50">
+                {t("emptyHistory")}
+              </p>
               <Link
-                href={{
-                  pathname: `/safety-quiz/${attempt.ticker}/result`,
-                  query: { attempt: attempt.id },
-                }}
-                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                href="/markets"
+                className={buttonVariants({ variant: "secondary" })}
               >
-                <StockLogo symbol={attempt.ticker} className="size-10 text-xs" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-mono text-sm font-semibold text-white/90">
-                    {attempt.ticker}
-                  </p>
-                  <p className="mt-0.5 text-xs text-white/50">
-                    {formatDate(attempt.createdAt, locale)}
-                  </p>
-                </div>
-                <Badge variant={verdictVariant(attempt.verdict)}>
-                  {t(`verdict.${attempt.verdict}.title`)}
-                </Badge>
-                <span className="font-mono text-sm tabular-nums text-white/80">
-                  {attempt.score}/{attempt.total}
-                </span>
+                <Search className="size-4" aria-hidden />
+                {t("history.emptyCta")}
               </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {attempts.map((attempt) => (
+                <li key={attempt.id}>
+                  <Link
+                    href={{
+                      pathname: `/safety-quiz/${attempt.ticker}/result`,
+                      query: { attempt: attempt.id },
+                    }}
+                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  >
+                    <StockLogo
+                      symbol={attempt.ticker}
+                      className="size-10 text-xs"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-mono text-sm font-semibold text-white/90">
+                        {attempt.ticker}
+                      </p>
+                      <p className="mt-0.5 text-xs text-white/50">
+                        {formatDate(attempt.createdAt, locale)}
+                      </p>
+                    </div>
+                    <Badge variant={toneForLevel(attempt.level)}>
+                      {attempt.level}
+                    </Badge>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
 
-      <div className="mt-8">
-        <Link
-          href="/markets"
-          className={cn(buttonVariants({ variant: "ghost" }), "w-full")}
-        >
-          <Plus className="size-4" aria-hidden />
-          {t("history.newCheck")}
-        </Link>
+          <div className="mt-8">
+            <Link
+              href="/markets"
+              className={cn(buttonVariants({ variant: "ghost" }), "w-full")}
+            >
+              <Plus className="size-4" aria-hidden />
+              {t("history.newCheck")}
+            </Link>
+          </div>
+          </div>
+        </div>
       </div>
 
       <Disclaimer className="mt-8" />
-    </div>
+    </Container>
   );
 }

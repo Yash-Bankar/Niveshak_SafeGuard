@@ -16,8 +16,10 @@ import type { QuizQuestion } from "@/lib/backend/schemas";
 import { classifyTopic, toQuizTopic } from "@/lib/scan/topics";
 import { useFomoStore } from "@/lib/stores/fomo";
 import { useSafetyFlow } from "@/lib/stores/safetyFlow";
-import { buildNarration } from "@/lib/voice/speech-text";
+import { narrationSegments } from "@/lib/voice/speech-text";
+import { useSpeech } from "@/lib/voice/speech";
 import { NarrationControls } from "@/components/features/voice/NarrationControls";
+import { HighlightedText } from "@/components/features/voice/HighlightedText";
 import { cn } from "@/lib/cn";
 
 const LETTERS = ["A", "B", "C", "D"] as const;
@@ -64,6 +66,7 @@ export function SafetyQuizFlow({
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const { toast } = useToast();
+  const speech = useSpeech();
 
   const step = useSafetyFlow((state) => state.step);
   const scan = useSafetyFlow((state) => state.scan);
@@ -155,6 +158,16 @@ export function SafetyQuizFlow({
     startQuizFlow();
   }, [startQuizFlow]);
 
+  // Skip the screenshot from step 1 (optional but recommended): keep the tip
+  // source, drop any scan, and go straight to the quiz.
+  const skipScreenshot = React.useCallback(
+    (source: string) => {
+      useSafetyFlow.setState({ tipSource: source, scan: null, step: "scan" });
+      startQuizFlow();
+    },
+    [startQuizFlow]
+  );
+
   const submit = React.useCallback(() => {
     const flow = useSafetyFlow.getState();
     if (flow.answers.length === 0 || flow.answers.some((answer) => !answer)) {
@@ -174,6 +187,7 @@ export function SafetyQuizFlow({
       body: JSON.stringify({
         answers: flow.answers,
         ticker: flow.ticker ?? stock,
+        locale,
         ...(flow.quizId ? { quizId: flow.quizId } : {}),
         ...(flow.tipSource ? { tipSource: flow.tipSource } : {}),
         ...(summary ? { scanSummary: summary } : {}),
@@ -205,7 +219,7 @@ export function SafetyQuizFlow({
         setErrorKind(errorKindOf(err));
         setQuizPhase("submitError");
       });
-  }, [backToScan, router, stock, t, toast]);
+  }, [backToScan, locale, router, stock, t, toast]);
 
   const total = questions.length;
   const answeredAll = total > 0 && answers.every((answer) => answer !== null);
@@ -309,6 +323,8 @@ export function SafetyQuizFlow({
           <SourceStep
             initialTipSource={tipSource}
             onScanned={(payload) => setScanned(payload)}
+            allowSkip
+            onSkip={skipScreenshot}
           />
         </div>
         <Disclaimer className="mt-8 text-center" />
@@ -318,21 +334,6 @@ export function SafetyQuizFlow({
 
   /* ---------------- Step 2: report / generation ---------------- */
   if (step === "scan") {
-    if (!scan) {
-      return (
-        <div>
-          {header}
-          <div className="mt-5">
-            <SourceStep
-              initialTipSource={tipSource}
-              onScanned={(payload) => setScanned(payload)}
-            />
-          </div>
-          <Disclaimer className="mt-8 text-center" />
-        </div>
-      );
-    }
-
     if (generating) {
       return (
         <div>
@@ -362,6 +363,23 @@ export function SafetyQuizFlow({
                 {t("errors.back")}
               </Link>
             </div>
+          </div>
+          <Disclaimer className="mt-8 text-center" />
+        </div>
+      );
+    }
+
+    if (!scan) {
+      return (
+        <div>
+          {header}
+          <div className="mt-5">
+            <SourceStep
+              initialTipSource={tipSource}
+              onScanned={(payload) => setScanned(payload)}
+              allowSkip
+              onSkip={skipScreenshot}
+            />
           </div>
           <Disclaimer className="mt-8 text-center" />
         </div>
@@ -430,9 +448,16 @@ export function SafetyQuizFlow({
     return <div>{header}</div>;
   }
   const topic = toQuizTopic(quizTopic) ?? classifyTopic(question.question);
-  const narration = buildNarration(
+  const narration = narrationSegments(
     question.question,
     LETTERS.map((letter) => ({ label: letter, text: question.options[letter] }))
+  );
+  const narrationId = `safety-q${currentIndex}`;
+  const speaking =
+    speech.id === narrationId &&
+    (speech.status === "playing" || speech.status === "paused");
+  const segmentByKey = new Map(
+    narration.segments.map((segment) => [segment.key, segment])
   );
 
   return (
@@ -449,7 +474,8 @@ export function SafetyQuizFlow({
               {Math.round(((currentIndex + 1) / total) * 100)}%
             </span>
             <NarrationControls
-              narration={narration}
+              id={narrationId}
+              narration={narration.text}
               active={quizPhase === "questions"}
             />
           </div>
@@ -479,7 +505,14 @@ export function SafetyQuizFlow({
             </Badge>
           ) : null}
           <p className="text-base font-semibold leading-relaxed text-white">
-            {question.question}
+            {speaking ? (
+              <HighlightedText
+                text={narration.segments[0].text}
+                activeWord={speech.wordIndex - narration.segments[0].startWord}
+              />
+            ) : (
+              question.question
+            )}
           </p>
 
           <div className="mt-5 space-y-3">
@@ -502,7 +535,17 @@ export function SafetyQuizFlow({
                     {letter}
                   </span>
                   <span className="text-sm leading-relaxed text-white/85">
-                    {question.options[letter]}
+                    {(() => {
+                      const segment = segmentByKey.get(letter);
+                      return speaking && segment ? (
+                        <HighlightedText
+                          text={segment.text}
+                          activeWord={speech.wordIndex - segment.startWord}
+                        />
+                      ) : (
+                        question.options[letter]
+                      );
+                    })()}
                   </span>
                 </button>
               );

@@ -13,19 +13,21 @@
     "cancel": "Cancel",
     "seeAll": "See all",
     "changeLanguage": "Change language",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "languageLocked": "Finish or leave this quiz to change the language."
   },
   "nav": {
     "main": "Main",
     "home": "Home",
     "markets": "Markets",
     "safety": "Safety",
-    "profile": "Profile"
+    "profile": "Profile",
+    "portfolio": "Portfolio"
   },
   "dashboard": {
     "subtitle": "Your investor-safety home base.",
-    "body": "Your FOMO score, watchlist and safety checks will appear here.",
-    "fomoCardTitle": "Your FOMO score",
+    "body": "Your FIN score, watchlist and safety checks will appear here.",
+    "fomoCardTitle": "Your FIN score",
     "actionAssistant": "Ask the AI educator",
     "actionMarkets": "Explore markets",
     "actionSafety": "Take a safety check",
@@ -54,19 +56,26 @@
     "movers": {
       "title": "Gainers & losers",
       "subtext": "Trending & top movers since previous market close"
+    },
+    "checkSources": {
+      "title": "Check a tip for fraud",
+      "body": "Scan a screenshot for warning signs before you trust it."
     }
   },
   "landing": {
     "meta": {
       "title": "Niveshak SafeGuard",
-      "description": "Educational investor-safety companion: spot red flags in tips, measure your FOMO and learn the basics in your language. No trading, no advice, no predictions."
+      "description": "Educational investor-safety companion: spot red flags in tips, measure your FIN and learn the basics in your language. No trading, no advice, no predictions."
     },
     "hero": {
       "headline": "Don't let a hot tip burn your savings.",
-      "sub": "Niveshak SafeGuard teaches you to spot red flags, measures how much FOMO drives your decisions, and warns you before you act — in your language, with no trading and no advice.",
-      "fomoLabel": "FOMO meter",
-      "fomoBand": "High FOMO",
-      "flagChip": "Red flag detected: promises guaranteed returns"
+      "sub": "Niveshak SafeGuard teaches you to spot red flags, measures how much FIN drives your decisions, and warns you before you act — in your language, with no trading and no advice.",
+      "fomoLabel": "FIN meter",
+      "fomoBand": "High FIN",
+      "flagChip": "Red flag detected: promises guaranteed returns",
+      "sampleNotice": "Showing sample score",
+      "takeQuizHint": "Take quiz to get yours",
+      "yourScoreLabel": "Your current FIN score"
     },
     "features": {
       "title": "Three tools that keep you safe",
@@ -75,7 +84,7 @@
         "body": "Ask simple questions about SIPs, mutual funds, SEBI rules and more — answered in your language by an AI trained on official investor-education material."
       },
       "fomo": {
-        "title": "FOMO meter",
+        "title": "FIN meter",
         "body": "A 6-question quiz scores how impulsive your investing style is, so you can notice when urgency — not research — is driving the decision."
       },
       "scanner": {
@@ -92,7 +101,7 @@
         },
         "2": {
           "title": "Learn the basics",
-          "body": "Chat with the AI educator and take the 1-minute FOMO quiz."
+          "body": "Chat with the AI educator and take the 1-minute FIN quiz."
         },
         "3": {
           "title": "Check before you act",
@@ -153,12 +162,12 @@
     "footer": "Educational information only — not investment advice. Niveshak SafeGuard is not a SEBI-registered advisor."
   },
   "fomo": {
-    "title": "FOMO quiz",
+    "title": "FIN quiz",
     "subtitle": "A 1-minute quiz that scores how impulsive your investing style is.",
     "body": "Your score will appear as a meter in the top bar.",
     "takeTheQuiz": "Take the quiz",
     "quizTitle": "6 questions. 1 minute. Be honest.",
-    "meterAria": "FOMO score {score} out of 100, band: {band}",
+    "meterAria": "FIN score {score} out of 100, band: {band}",
     "quiz": {
       "progress": "Question {current} of {total}",
       "next": "Next",
@@ -237,9 +246,36 @@
         "desc": "You often feel pulled to join a rising stock. Pause and check the fundamentals first."
       },
       "red": {
-        "title": "High FOMO",
+        "title": "High FIN",
         "desc": "Urgency can drive your decisions. Don't act just because a price is moving."
       }
+    },
+    "explainer": {
+      "title": "Your FIN score",
+      "noSignals": "So far this score comes from your quiz. Use the app — chat, watchlist, holdings — and it keeps updating.",
+      "weightsNote": "Weighting: quiz 45%, chat wording 20%, recent returns 5%, portfolio concentration 30%.",
+      "retake": "Retake the quiz",
+      "signals": {
+        "base": {
+          "label": "Quiz base",
+          "desc": "Your 6-question behavioural quiz score."
+        },
+        "language": {
+          "label": "Chat wording",
+          "desc": "Urgency / all-in language in your recent chat messages."
+        },
+        "returns": {
+          "label": "Recent returns",
+          "desc": "How overheated your watched stocks look (near 52-week highs / overbought)."
+        },
+        "portfolio": {
+          "label": "Portfolio concentration",
+          "desc": "How concentrated your holdings are by value and sector."
+        }
+      },
+      "finFull": "FIN = FOMO – Impulsivity – Negligence",
+      "aboutTitle": "How FIN is calculated",
+      "aboutBody": "FIN blends your quiz base (45%) with three live signals: the urgency language in your chats (20%), how overheated your watched stocks look (5%), and how lopsided your portfolio is (30%). A lopsided portfolio — one big holding with the rest small — raises FIN even if you hold several stocks."
     }
   },
   "market": {
@@ -277,7 +313,14 @@
     "chart": {
       "aria": "Price history chart",
       "empty": "No data for this range.",
-      "stale": "Couldn't load this range — showing the previous chart."
+      "stale": "Couldn't load this range — showing the previous chart.",
+      "type": {
+        "area": "Area",
+        "line": "Line",
+        "bar": "Bars",
+        "candle": "Candles",
+        "kagi": "Kagi"
+      }
     },
     "stats": {
       "dayHigh": "Day high",
@@ -362,6 +405,15 @@
     "unavailable": {
       "title": "Data unavailable",
       "body": "Market data couldn't be loaded right now. Please try again."
+    },
+    "holding": {
+      "title": "Your holding",
+      "quantity": "Quantity",
+      "buyPrice": "Buy price",
+      "value": "Current value",
+      "pnl": "P&L",
+      "manage": "Manage in portfolio",
+      "lots": "{count} lots"
     }
   },
   "safety": {
@@ -371,7 +423,11 @@
     "emptyHistory": "No safety checks yet — your scans and quiz results will be listed here.",
     "history": {
       "emptyCta": "Pick a stock to start",
-      "newCheck": "Start a new check"
+      "newCheck": "Start a new check",
+      "startLabel": "Start a new check",
+      "fomoTitle": "Your FIN profile",
+      "fomoEmpty": "Take the 1-minute FIN quiz to see your profile.",
+      "retakeFomo": "Retake FIN quiz"
     },
     "verdict": {
       "INFORMED": {
@@ -439,7 +495,9 @@
       "scanCta": "Scan for warning signs",
       "needContent": "Add a screenshot first.",
       "privacy": "Your screenshot is scanned for warning signs and never saved — we keep only the result: the warning signs found and the risk level.",
-      "whyScan": "Checks for language SEBI prohibits in financial promotions."
+      "whyScan": "Checks for language SEBI prohibits in financial promotions.",
+      "skipScreenshot": "Skip screenshot",
+      "screenshotRecommended": "Recommended, but optional."
     },
     "scanErrors": {
       "rateLimited": "You're scanning too quickly. Wait a few minutes and try again.",
@@ -551,7 +609,50 @@
         "title": "Result not found",
         "body": "This result doesn't exist on this device, or it belongs to another browser.",
         "browse": "Pick a stock"
-      }
+      },
+      "headlineFallback": {
+        "INFORMED": "You spotted the risks before acting.",
+        "CAUTIOUS": "You're partway there — dig a little deeper.",
+        "SPECULATIVE": "This one is worth slowing right down."
+      },
+      "summaryTitle": "Your AI summary",
+      "aiTag": "AI-generated · educational only",
+      "scorecardTitle": "Safety scorecard",
+      "topicN": "Question {n}",
+      "scorecardCorrect": "Correct",
+      "scorecardIncorrect": "Incorrect",
+      "scorecardCorrectAnswer": "Correct answer",
+      "scorecardExplanationFallback": "Revisit this topic before acting on the tip.",
+      "strengthsTitle": "Strengths",
+      "risksTitle": "Risks",
+      "tipCheckTitle": "Tip check",
+      "tipCheckSource": "Source",
+      "tipCheckFlags": "Warning signs found",
+      "tipCheckNone": "No promotional warning signs matched in the screenshot.",
+      "nextStepsTitle": "Your next steps",
+      "nextStepsProgress": "{done} of {total} done",
+      "nextStepsComplete": "All done — nice work.",
+      "miniLessonTitle": "Mini-lesson",
+      "miniLessonAsk": "Ask the assistant to explain",
+      "miniLessonAskPrompt": "Explain: {title}",
+      "fomoStrip": {
+        "green": "Your FIN band is green — steady, planned behaviour.",
+        "yellow": "Your FIN band is yellow — double-check urgency before you act.",
+        "red": "Your FIN band is red — pause; this is where impulsive buying happens."
+      },
+      "share": "Share summary",
+      "shareCopied": "Summary copied to clipboard",
+      "shareTitle": "My Niveshak SafeGuard result",
+      "shareText": "{level} — Niveshak SafeGuard safety result. Educational only, not investment advice.",
+      "errorTitle": "Couldn't load this result",
+      "errorBody": "Something went wrong loading your result. Please try again.",
+      "errorRetry": "Back to safety checks",
+      "gapsTitle": "Areas to improve"
+    },
+    "scanStandalone": {
+      "title": "Check for fraud/scam in your sources",
+      "body": "Upload a screenshot of the tip — we scan it for language SEBI prohibits in financial promotions. After the report, pick a stock to run its full safety quiz.",
+      "done": "Done"
     }
   },
   "chat": {
@@ -575,14 +676,16 @@
     "title": "Profile",
     "anonymousNote": "Anonymous — no account, no personal data",
     "languageTitle": "Language",
-    "fomoTitle": "FOMO quiz",
-    "fomoBody": "See how much FOMO drives your investing decisions.",
+    "fomoTitle": "FIN quiz",
+    "fomoBody": "See how much FIN drives your investing decisions.",
     "privacyTitle": "Privacy",
-    "privacyBody": "No account or personal data is collected. Uploaded screenshots are scanned in memory and never stored."
+    "privacyBody": "No account or personal data is collected. Uploaded screenshots are scanned in memory and never stored.",
+    "portfolioTitle": "My portfolio",
+    "portfolioBody": "Record what you own to see live value and P&L."
   },
   "portfolio": {
     "title": "My portfolio (educational)",
-    "note": "Record what you own so the FOMO score can reflect your concentration and recent returns. Nothing here is a trade — no orders are ever placed.",
+    "note": "Record what you own so the FIN score can reflect your concentration and recent returns. Nothing here is a trade — no orders are ever placed.",
     "symbol": "Symbol",
     "symbolPlaceholder": "e.g. RELIANCE",
     "quantity": "Quantity",
@@ -593,7 +696,13 @@
     "empty": "No holdings yet. Add one to see your portfolio signals.",
     "error": "Something went wrong — try again.",
     "invalid": "Enter a valid symbol, quantity and buy price.",
-    "full": "Your portfolio is full."
+    "full": "Your portfolio is full.",
+    "pageTitle": "My portfolio",
+    "pageSubtitle": "An educational record of what you own — not a trade.",
+    "addTitle": "Add a holding",
+    "holdingsTitle": "Your holdings",
+    "change": "Change stock",
+    "lots": "lots"
   },
   "voice": {
     "listenAria": "Speak your question",
@@ -609,6 +718,123 @@
     "permissionDenied": "Microphone permission was denied.",
     "listenError": "Couldn't hear that — try again.",
     "speakError": "Couldn't read that aloud.",
-    "emptyTranscript": "I didn't catch that — try again."
+    "emptyTranscript": "I didn't catch that — try again.",
+    "pauseAria": "Pause reading",
+    "resumeAria": "Resume reading"
+  },
+  "guide": {
+    "button": "Guide",
+    "progress": "Step {current} of {total}",
+    "controls": {
+      "next": "Next",
+      "back": "Back",
+      "skip": "Skip",
+      "done": "Done"
+    },
+    "chapters": {
+      "welcome": "Welcome",
+      "dashboard": "Dashboard",
+      "navigation": "Navigation",
+      "markets": "Markets",
+      "stock": "Stock page",
+      "safety": "Safety hub",
+      "quiz": "Safety check",
+      "result": "Result",
+      "finish": "All set"
+    },
+    "steps": {
+      "welcome": {
+        "title": "A quick tour of Niveshak SafeGuard",
+        "body": "I'll walk you through each part of the app — what it does and when to use it — in about two minutes. Use Next/Back anytime, or Skip to exit."
+      },
+      "dashboard-search": {
+        "title": "Find any stock",
+        "body": "Type a company name or ticker here (e.g. RELIANCE) to open its page. Nothing you type is stored."
+      },
+      "dashboard-pulse": {
+        "title": "Market Pulse",
+        "body": "The NIFTY 50 snapshot for context. This is information only — we never predict prices."
+      },
+      "dashboard-fomo": {
+        "title": "Your FIN score",
+        "body": "How impulsive your investing style is, from the 6-question quiz. Higher means more caution is wise. It updates as you behave."
+      },
+      "dashboard-actions": {
+        "title": "Quick actions",
+        "body": "Jump straight to the assistant, the markets, or your safety checks."
+      },
+      "dashboard-lists": {
+        "title": "Watchlist, trending & movers",
+        "body": "Stocks you watch, plus today's most active and biggest gainers/losers. For awareness only — not recommendations."
+      },
+      "nav-main": {
+        "title": "Main navigation",
+        "body": "Home, Markets, Safety and Profile — always one tap away."
+      },
+      "nav-fomo": {
+        "title": "The FIN meter",
+        "body": "Your current score, always visible. Tap it to read what it means."
+      },
+      "nav-tools": {
+        "title": "Language & profile",
+        "body": "Switch between English, हिंदी and मराठी, or open your profile for settings and your educational holdings."
+      },
+      "assistant": {
+        "title": "Ask the assistant",
+        "body": "Your always-available finance educator. Ask about concepts — it never gives tips or predictions."
+      },
+      "markets-search": {
+        "title": "Search from Markets",
+        "body": "The same search, with the wider market overview below."
+      },
+      "markets-indices": {
+        "title": "Indices",
+        "body": "NIFTY 50 and SENSEX at a glance, refreshed automatically."
+      },
+      "markets-movers": {
+        "title": "Gainers & losers",
+        "body": "Switch tabs to see today's movers. Educational only — never a buy/sell signal."
+      },
+      "stock-chart": {
+        "title": "Price chart",
+        "body": "Pick a timeframe (1D–ALL) to see how the price has moved. Past performance isn't a prediction."
+      },
+      "stock-volatility": {
+        "title": "Volatility gauge",
+        "body": "How much the price swings. Tap the (i) to learn what that means for risk."
+      },
+      "stock-cta": {
+        "title": "Check before you act",
+        "body": "This is the main action here — run a safety check on this stock before making any decision."
+      },
+      "safety-fomo": {
+        "title": "Your FIN profile",
+        "body": "A reminder of your impulse score while you review your past checks."
+      },
+      "safety-list": {
+        "title": "Your safety checks",
+        "body": "Every past scan and quiz result lives here. Tap one to reopen its report card."
+      },
+      "quiz-source": {
+        "title": "Where did the tip come from?",
+        "body": "Choose the source (e.g. Telegram) and add a screenshot. It helps you reflect on where tips come from."
+      },
+      "quiz-scan": {
+        "title": "Scan, quiz, then verdict",
+        "body": "We scan the screenshot for warning signs, then give a short quiz and a safety report card. You're never blocked — the goal is awareness."
+      },
+      "result-hero": {
+        "title": "Your report card",
+        "body": "The verdict, your score and the AI headline — a shareable summary of this check."
+      },
+      "result-actions": {
+        "title": "What to do next",
+        "body": "Go back to the stock, retake the quiz, share the summary, or return to your dashboard."
+      },
+      "finish": {
+        "title": "You're all set",
+        "body": "That's the whole app. Remember: Niveshak SafeGuard educates and warns — it never tells you to buy, sell or hold. Reopen this guide anytime."
+      }
+    }
   }
 }

@@ -2,13 +2,16 @@
 
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Bot, RotateCcw, SendHorizontal, X } from "lucide-react";
+import { RotateCcw, SendHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useFomoStore } from "@/lib/stores/fomo";
 import { toSpeechText } from "@/lib/voice/speech-text";
+import { useSpeech, stopSpeech } from "@/lib/voice/speech";
+import { HighlightedText } from "@/components/features/voice/HighlightedText";
 import { MicButton } from "@/components/features/voice/MicButton";
 import { SpeakButton } from "@/components/features/voice/SpeakButton";
 import { SafeMarkdown } from "./SafeMarkdown";
+import { MascotEyes } from "./MascotEyes";
 import { useAssistantStore } from "./store";
 
 interface Message {
@@ -50,6 +53,10 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
   const [errorKind, setErrorKind] = React.useState<ErrorKind>(null);
   const [errorCode, setErrorCode] = React.useState<string | null>(null);
   const [failedText, setFailedText] = React.useState<string | null>(null);
+  const speech = useSpeech();
+
+  // Stop any read-aloud when the chat closes (this panel unmounts).
+  React.useEffect(() => () => stopSpeech(), []);
 
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
@@ -196,9 +203,17 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
       <header className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
         <span
           aria-hidden
-          className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-primary text-white"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-primary ring-1 ring-white/20 shadow-md shadow-blue-500/20"
         >
-          <Bot className="size-[18px]" />
+          <MascotEyes
+            size={34}
+            eyeSize={28}
+            gap={40}
+            frameColor="transparent"
+            eyeColor="#ffffff"
+            interactive={true}
+            mood={status === "sending" ? "thinking" : "idle"}
+          />
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{t("title")}</p>
@@ -238,9 +253,19 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
           >
             {msg.role === "assistant" ? (
               <>
-                <SafeMarkdown text={msg.content} />
+                {speech.id === msg.id &&
+                (speech.status === "playing" || speech.status === "paused") ? (
+                  <p className="whitespace-pre-wrap">
+                    <HighlightedText
+                      text={toSpeechText(msg.content)}
+                      activeWord={speech.wordIndex}
+                    />
+                  </p>
+                ) : (
+                  <SafeMarkdown text={msg.content} />
+                )}
                 <div className="mt-1 flex justify-end">
-                  <SpeakButton text={toSpeechText(msg.content)} />
+                  <SpeakButton id={msg.id} text={toSpeechText(msg.content)} />
                 </div>
               </>
             ) : (

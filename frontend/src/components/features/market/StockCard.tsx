@@ -39,7 +39,7 @@ export function StockCard({
     >
       <Link
         href={`/stock/${stock.symbol}`}
-        className="block w-64 shrink-0 snap-start rounded-3xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="block w-64 shrink-0 snap-start rounded-3xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:w-auto"
       >
         <span className="flex items-center gap-3">
           <StockLogo symbol={stock.symbol} className="size-9 text-xs" />

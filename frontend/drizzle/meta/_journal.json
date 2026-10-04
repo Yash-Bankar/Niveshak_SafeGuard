@@ -15,6 +15,13 @@
       "when": 1791065430623,
       "tag": "0001_dark_mystique",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791114047106,
+      "tag": "0002_acoustic_viper",
+      "breakpoints": true
     }
   ]
 }

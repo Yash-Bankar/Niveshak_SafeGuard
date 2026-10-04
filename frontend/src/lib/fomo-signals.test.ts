@@ -73,31 +73,56 @@ describe("returnsHeat", () => {
 describe("portfolioSignal", () => {
   it("is high for a single, undiversified, thinly-monitored portfolio", () => {
     const score = portfolioSignal({
-      holdingsCount: 1,
-      sectors: ["Energy"],
+      holdings: [{ value: 1000, sector: "Energy" }],
       watchlistCount: 1,
     });
     expect(score).toBe(100);
   });
 
-  it("is low for a broad, sector-diverse, well-monitored portfolio", () => {
+  it("is low for a value-even, sector-diverse, well-monitored portfolio", () => {
     const score = portfolioSignal({
-      holdingsCount: 6,
-      sectors: ["Energy", "IT", "Banks", "FMCG", "Auto", "Pharma"],
+      holdings: ["Energy", "IT", "Banks", "FMCG", "Auto", "Pharma"].map(
+        (sector) => ({ value: 1000, sector })
+      ),
       watchlistCount: 8,
     });
     expect(score).toBe(0);
   });
+
+  it("penalises one dominant holding even with several stocks", () => {
+    const score = portfolioSignal({
+      holdings: [
+        { value: 9000, sector: "Energy" },
+        { value: 1000, sector: "IT" },
+      ],
+      watchlistCount: 8,
+    });
+    expect(score).toBeGreaterThanOrEqual(60);
+  });
+
+  it("is low when positions are asymmetric but spread across sectors", () => {
+    // 80/10/10 in three sectors → asymmetry is real but sector-safe.
+    const score = portfolioSignal({
+      holdings: [
+        { value: 8000, sector: "Energy" },
+        { value: 1000, sector: "IT" },
+        { value: 1000, sector: "Banks" },
+      ],
+      watchlistCount: 8,
+    });
+    expect(score).toBeGreaterThan(20);
+    expect(score).toBeLessThan(70);
+  });
 });
 
 describe("combineFomo", () => {
-  it("weights base 50 / signals 20/20/10", () => {
+  it("weights base 45 / language 20 / returns 5 / portfolio 30", () => {
     expect(
       combineFomo({ base: 50, language: 0, returns: 0, portfolio: 0 })
-    ).toMatchObject({ score: 25, band: "green" });
+    ).toMatchObject({ score: 23, band: "green" });
     expect(
       combineFomo({ base: 0, language: 100, returns: 100, portfolio: 100 })
-    ).toMatchObject({ score: 50, band: "yellow" });
+    ).toMatchObject({ score: 55, band: "yellow" });
     expect(
       combineFomo({ base: 100, language: 100, returns: 100, portfolio: 100 })
     ).toMatchObject({ score: 100, band: "red" });

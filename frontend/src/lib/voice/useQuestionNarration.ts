@@ -1,34 +1,50 @@
 "use client";
 
 import * as React from "react";
-import { speakText, stopSpeaking } from "./client";
+import { speak, stopSpeech, useSpeech, type SpeechStatus } from "./speech";
 import { setVoiceMuted, useVoiceMuted } from "./settings";
 
 /**
- * Read a quiz question aloud when it appears (unless muted), stopping on
- * change/unmount. `replay` speaks on demand and overrides the mute setting.
+ * Auto-read a quiz question when it appears (unless muted), stopping on
+ * change/unmount. Returns the current word index for highlighting plus
+ * `status` so a control can show Pause/Play. `replay` speaks on demand.
  */
 export function useQuestionNarration(
   narration: string,
-  active: boolean
-): { replay: () => void; muted: boolean; toggleMuted: () => void } {
+  active: boolean,
+  id: string
+): {
+  replay: () => void;
+  muted: boolean;
+  toggleMuted: () => void;
+  status: SpeechStatus;
+  wordIndex: number;
+} {
   const muted = useVoiceMuted();
+  const speech = useSpeech();
+  const owns = speech.id === id;
 
   React.useEffect(() => {
     if (!active || muted || !narration) return;
-    void speakText(narration).catch(() => undefined);
+    void speak(id, narration);
     return () => {
-      stopSpeaking();
+      stopSpeech();
     };
-  }, [narration, active, muted]);
+  }, [narration, active, muted, id]);
 
   const replay = React.useCallback(() => {
-    void speakText(narration).catch(() => undefined);
-  }, [narration]);
+    void speak(id, narration);
+  }, [id, narration]);
 
   const toggleMuted = React.useCallback(() => {
     setVoiceMuted(!muted);
   }, [muted]);
 
-  return { replay, muted, toggleMuted };
+  return {
+    replay,
+    muted,
+    toggleMuted,
+    status: owns ? speech.status : "idle",
+    wordIndex: owns ? speech.wordIndex : -1,
+  };
 }

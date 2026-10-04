@@ -22,10 +22,11 @@ export function BottomDock() {
   return (
     <nav
       aria-label={t("main")}
+      data-tour="nav-dock"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/80 backdrop-blur-xl md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {NAV_ITEMS.map(({ href, labelKey, Icon }) => {
           const active = isNavActive(pathname, href);
 

@@ -56,7 +56,7 @@ export function MoversCards({
         initial={reduceMotion ? false : { opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: reduceMotion ? 0 : 0.2 }}
-        className="mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1"
+        className="mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 lg:grid lg:grid-cols-2 lg:overflow-visible lg:pb-0"
       >
         {rows.length > 0 ? (
           rows.map((stock) => (

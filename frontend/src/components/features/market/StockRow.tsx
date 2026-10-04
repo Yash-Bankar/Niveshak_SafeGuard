@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { ChangePill } from "@/components/ui/ChangePill";
 import { Sparkline } from "@/components/ui/Chart";
 import { formatCompactNumber, formatINR } from "@/lib/format";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 import type { MarketRow } from "@/lib/market";
 import { StockLogo } from "./StockLogo";
 
@@ -19,6 +20,8 @@ export function StockRow({
 }) {
   const reduceMotion = useReducedMotion();
   const positive = stock.change_pct >= 0;
+  // Only mount the chart at sm+ — recharts measures 0×0 inside `hidden`.
+  const showSparkline = useMediaQuery("(min-width: 640px)");
 
   return (
     <motion.div whileTap={reduceMotion ? undefined : { scale: 0.97 }}>
@@ -35,11 +38,13 @@ export function StockRow({
             {stock.symbol}
           </span>
         </span>
-        <Sparkline
-          data={stock.sparkline}
-          positive={positive}
-          className="hidden h-8 w-24 sm:block"
-        />
+        {showSparkline ? (
+          <Sparkline
+            data={stock.sparkline}
+            positive={positive}
+            className="h-8 w-24"
+          />
+        ) : null}
         <span className="text-right">
           <span className="block font-mono text-sm tabular-nums text-white">
             {formatINR(stock.price)}

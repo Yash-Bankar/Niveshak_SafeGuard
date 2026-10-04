@@ -24,17 +24,65 @@ export function toSpeechText(markdown: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
-/** Narration for one quiz question: the prompt then each lettered option. */
+function cleanLine(value: string): string {
+  return cleanMathText(value).replace(/\s+/g, " ").trim();
+}
+
+function wordCount(value: string): number {
+  return value.split(/\s+/).filter(Boolean).length;
+}
+
+export interface NarrationSegment {
+  /** Stable key: "q" or the option label. */
+  key: string;
+  /** Cleaned, displayable text for this segment. */
+  text: string;
+  /** Index (into the narration's words) of this segment's first word. */
+  startWord: number;
+}
+
+export interface Narration {
+  /** Full spoken narration (question then each lettered option). */
+  text: string;
+  segments: NarrationSegment[];
+}
+
+/**
+ * Split a quiz question + options into narration segments with word offsets so
+ * the UI can highlight the word being spoken. The option letters stay in the
+ * spoken text; each option's highlight points at its TEXT (after the letter).
+ */
+export function narrationSegments(
+  question: string,
+  options: readonly { label: string; text: string }[]
+): Narration {
+  const segments: NarrationSegment[] = [];
+  const chunks: string[] = [];
+
+  const head = cleanLine(question);
+  segments.push({ key: "q", text: head, startWord: 0 });
+  chunks.push(head);
+  let word = wordCount(head);
+
+  for (const option of options) {
+    const text = cleanLine(option.text);
+    if (!text) continue;
+    const chunk = `${option.label}. ${text}`;
+    segments.push({ key: option.label, text, startWord: word + 1 });
+    chunks.push(chunk);
+    word += wordCount(chunk);
+  }
+
+  return {
+    text: chunks.join(". ").replace(/\s+/g, " ").trim(),
+    segments,
+  };
+}
+
+/** Narration string for TTS. */
 export function buildNarration(
   question: string,
   options: readonly { label: string; text: string }[]
 ): string {
-  const head = cleanMathText(question).replace(/\s+/g, " ").trim();
-  const parts = options
-    .map((option) => {
-      const text = cleanMathText(option.text).replace(/\s+/g, " ").trim();
-      return text ? `${option.label}. ${text}` : "";
-    })
-    .filter(Boolean);
-  return [head, ...parts].join(". ").replace(/\s+/g, " ").trim();
+  return narrationSegments(question, options).text;
 }

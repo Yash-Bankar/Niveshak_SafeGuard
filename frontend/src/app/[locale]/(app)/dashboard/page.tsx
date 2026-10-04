@@ -1,16 +1,18 @@
 import { eq } from "drizzle-orm";
+import { ShieldAlert } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { db } from "@/db";
 import { fomoProfiles, watchlist } from "@/db/schema";
-import { Badge } from "@/components/ui/Badge";
-import { Card } from "@/components/ui/Card";
+import { Container } from "@/components/ui/Container";
 import { DashboardActions } from "@/components/features/dashboard/DashboardActions";
+import { DashboardFomoCard } from "@/components/features/fomo/DashboardFomoCard";
+import { GuideButton } from "@/components/features/guide/TourHost";
 import { Disclaimer } from "@/components/features/Disclaimer";
 import { DashboardMarket } from "@/components/features/market/DashboardMarket";
 import { SearchBar } from "@/components/features/market/SearchBar";
-import { redirect } from "@/i18n/navigation";
+import { redirect, Link } from "@/i18n/navigation";
 import { greetingSlotFor, tipIndexFor } from "@/lib/dashboard";
-import { asFomoBand, bandMeta } from "@/lib/fomo-bands";
+import { asFomoBand } from "@/lib/fomo-bands";
 import { getTrending, type TrendingFeed } from "@/lib/market";
 import { getVisitorId } from "@/lib/visitor";
 
@@ -49,12 +51,9 @@ export default async function DashboardPage({
     .limit(10);
 
   const t = await getTranslations("dashboard");
-  const tFomo = await getTranslations("fomo");
 
   const band = asFomoBand(profile.band);
-  const meta = bandMeta(band);
   const score = profile.fomoScore;
-  const bandTitle = tFomo(meta.labelKey);
 
   const greeting = t(`greeting.${greetingSlotFor(new Date().getHours())}`);
   const tipNumber = tipIndexFor() + 1;
@@ -67,74 +66,55 @@ export default async function DashboardPage({
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8 md:py-10">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-          {greeting}
-        </h1>
-        <p className="mt-1 text-sm text-white/50">{t("subtitle")}</p>
+    <Container className="py-8 md:py-10">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+            {greeting}
+          </h1>
+          <p className="mt-1 text-sm text-white/50">{t("subtitle")}</p>
+        </div>
+        <GuideButton />
+      </div>
+      <div data-tour="dashboard-search">
         <SearchBar className="mt-4" />
       </div>
 
-      <DashboardMarket
-        initial={feed}
-        watchlistSymbols={symbols.map((row) => row.symbol)}
-        tipNumber={tipNumber}
-      >
-        <Card className="mt-4 p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-xs font-medium uppercase tracking-wider text-white/40">
-                {t("fomoCardTitle")}
-              </h2>
-              <p className="mt-2 font-mono text-4xl font-bold tabular-nums text-white">
-                {score}
-                <span className="text-lg font-normal text-white/40">/100</span>
-              </p>
-            </div>
-            <Badge
-              variant={
-                band === "green"
-                  ? "positive"
-                  : band === "yellow"
-                    ? "warning"
-                    : "negative"
-              }
-            >
-              {bandTitle}
-            </Badge>
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <aside className="space-y-4 lg:order-2 lg:sticky lg:top-20 lg:self-start">
+          <div data-tour="dashboard-fomo">
+            <DashboardFomoCard score={score} band={band} />
           </div>
 
-          {/* Band scale: green 0–35, yellow 36–70, red 71–100. */}
-          <div className="relative mt-4" aria-hidden>
-            <div className="flex h-2 overflow-hidden rounded-full">
-              <span
-                className="h-full bg-emerald-500/70"
-                style={{ width: "35%" }}
-              />
-              <span
-                className="h-full bg-amber-500/70"
-                style={{ width: "35%" }}
-              />
-              <span className="h-full bg-red-500/70" style={{ width: "30%" }} />
-            </div>
-            <span
-              className="absolute -top-0.5 h-3 w-1 -translate-x-1/2 rounded-full bg-white shadow"
-              style={{ left: `${score}%` }}
+          <DashboardActions />
+
+          <Link
+            href="/safety/scan"
+            className="group flex items-start gap-3 rounded-3xl border border-rose-500/25 bg-rose-500/5 p-4 transition-colors hover:border-rose-400/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
+            <ShieldAlert
+              className="mt-0.5 size-5 shrink-0 text-rose-300"
+              aria-hidden
             />
-          </div>
+            <span className="flex flex-col gap-1">
+              <span className="font-semibold">{t("checkSources.title")}</span>
+              <span className="text-sm leading-relaxed text-white/50">
+                {t("checkSources.body")}
+              </span>
+            </span>
+          </Link>
+        </aside>
 
-          <p className="mt-3 text-sm leading-relaxed text-white/60">
-            {tFomo(`bands.${band}.desc`)}
-          </p>
-        </Card>
-      </DashboardMarket>
-
-      <div className="mt-4">
-        <DashboardActions />
+        <div className="min-w-0 lg:order-1 lg:col-span-2">
+          <DashboardMarket
+            initial={feed}
+            watchlistSymbols={symbols.map((row) => row.symbol)}
+            tipNumber={tipNumber}
+          />
+        </div>
       </div>
 
       <Disclaimer className="mt-8" />
-    </div>
+    </Container>
   );
 }

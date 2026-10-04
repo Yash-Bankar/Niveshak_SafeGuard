@@ -76,7 +76,7 @@ export function WatchlistCarousel({
   }, [symbols]);
 
   return (
-    <section>
+    <section data-tour="dashboard-watchlist">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-xs font-medium uppercase tracking-wider text-white/40">
           {t("watchlist.title")}
@@ -94,14 +94,14 @@ export function WatchlistCarousel({
           {t("watchlist.empty")}
         </div>
       ) : (
-        <div className="mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1">
+        <div className="mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 lg:grid lg:grid-cols-2 lg:overflow-visible lg:pb-0 xl:grid-cols-3">
           {symbols.map((symbol) => {
             const card = cards[symbol];
             if (card === undefined) {
               return (
                 <div
                   key={symbol}
-                  className="h-40 w-64 shrink-0 animate-pulse rounded-3xl bg-white/5"
+                  className="h-40 w-64 shrink-0 animate-pulse rounded-3xl bg-white/5 lg:w-auto"
                   aria-hidden
                 />
               );

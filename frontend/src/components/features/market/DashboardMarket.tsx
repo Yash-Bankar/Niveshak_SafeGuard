@@ -148,6 +148,7 @@ export function DashboardMarket({
       {feed ? (
         <>
           <Card className="mt-4 p-4 sm:p-5">
+            <div data-tour="dashboard-trending">
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
               <h2 className="text-xs font-medium uppercase tracking-wider text-white/40">
                 {t("trending.title")}
@@ -171,6 +172,7 @@ export function DashboardMarket({
                   {tMarket("emptyList")}
                 </p>
               )}
+            </div>
             </div>
           </Card>
 

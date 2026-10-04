@@ -4,9 +4,9 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Bot } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ChatPanel } from "./ChatPanel";
+import { MascotEyes } from "./MascotEyes";
 import { useAssistantStore } from "./store";
 
 const FOCUSABLE =
@@ -17,6 +17,7 @@ const emptySubscribe = () => () => {};
 /**
  * Chat overlay: portal + focus trap + ESC + body scroll lock (Modal pattern),
  * mounting ChatPanel only while open so history refetches per session.
+ * Positioned on desktop at bottom-left right above the mascot bubble.
  */
 function ChatOverlay({ onClose }: { onClose: () => void }) {
   const t = useTranslations("chat");
@@ -91,14 +92,14 @@ function ChatOverlay({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         aria-label={t("title")}
         tabIndex={-1}
-        className="glass relative z-10 flex h-[85vh] w-full flex-col overflow-hidden rounded-t-3xl border-x-0 border-b-0 focus:outline-none md:h-[480px] md:w-[560px] md:rounded-3xl md:border"
+        className="glass relative z-10 flex h-[85vh] w-full flex-col overflow-hidden rounded-t-3xl border-x-0 border-b-0 focus:outline-none md:h-[500px] md:w-[560px] md:rounded-3xl md:border"
         initial={
           reduceMotion
             ? { opacity: 0 }
-            : { opacity: 0, y: 48 }
+            : { opacity: 0, y: 48, scale: 0.96 }
         }
-        animate={{ opacity: 1, y: 0 }}
-        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 48 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 48, scale: 0.96 }}
         transition={{ duration: reduceMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
       >
         <ChatPanel onClose={() => onCloseRef.current()} />
@@ -121,24 +122,46 @@ export function AssistantBubble() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => openAssistant()}
-        aria-label={t("bubbleLabel")}
-        // Stays mounted (invisible) while open so focus can return to it.
+      <div
         className={cn(
-          "fixed bottom-24 right-4 z-40 flex size-14 items-center justify-center rounded-full bg-gradient-primary text-white shadow-lg shadow-blue-900/40 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 md:bottom-6 md:right-6",
-          open && "invisible"
+          "fixed bottom-24 right-4 z-40 md:bottom-6 md:right-6 group",
+          open && "invisible pointer-events-none"
         )}
       >
-        {!hasOpened ? (
-          <span
-            aria-hidden
-            className="absolute inset-0 animate-ping rounded-full bg-blue-400/50 motion-reduce:hidden"
+        {/* Subtle tooltip hint on hover */}
+        <div
+          role="tooltip"
+          className="pointer-events-none absolute bottom-full right-0 mb-2.5 whitespace-nowrap rounded-full border border-blue-400/30 bg-neutral-900/95 px-3 py-1 text-xs font-medium text-blue-200 shadow-xl opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:-translate-y-1"
+        >
+          {t("title")}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => openAssistant()}
+          aria-label={t("bubbleLabel")}
+          data-tour="assistant-bubble"
+          className="relative flex size-14 md:size-16 items-center justify-center rounded-full bg-gradient-primary text-white shadow-[0_4px_28px_rgba(37,99,235,0.6)] ring-2 ring-white/20 transition-all duration-300 hover:scale-105 hover:shadow-[0_6px_36px_rgba(59,130,246,0.85)] hover:ring-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        >
+          {/* Subtle pulsating beacon when first visited */}
+          {!hasOpened ? (
+            <span
+              aria-hidden
+              className="absolute -inset-1.5 animate-ping rounded-full bg-blue-500/40 motion-reduce:hidden"
+            />
+          ) : null}
+
+          {/* Interactive Mascot with blue theme body and white eyes */}
+          <MascotEyes
+            size={52}
+            eyeSize={28}
+            gap={40}
+            frameColor="transparent"
+            eyeColor="#ffffff"
+            interactive={true}
           />
-        ) : null}
-        <Bot className="size-6 relative" aria-hidden />
-      </button>
+        </button>
+      </div>
 
       {mounted
         ? createPortal(

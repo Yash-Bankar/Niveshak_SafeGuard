@@ -29,7 +29,7 @@ export function MarketPulse({
   const positive = (index?.change_pct ?? 0) >= 0;
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-neutral-900">
+    <section data-tour="dashboard-pulse" className="relative overflow-hidden rounded-3xl border border-white/10 bg-neutral-900">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_130%_at_12%_0%,rgba(59,130,246,0.38),rgba(99,102,241,0.20)_45%,rgba(11,12,14,0)_78%)]"

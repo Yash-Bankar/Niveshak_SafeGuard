@@ -29,6 +29,9 @@ export function LanguageSwitcher() {
 
   const [open, setOpen] = React.useState(false);
   const rootRef = React.useRef<HTMLDivElement>(null);
+  // The quiz is generated in one language and can't be re-generated cheaply —
+  // lock switching while on the safety-quiz (quiz + result) routes.
+  const locked = pathname.startsWith("/safety-quiz");
 
   React.useEffect(() => {
     if (!open) return;
@@ -64,20 +67,23 @@ export function LanguageSwitcher() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={t("changeLanguage")}
+        disabled={locked}
+        title={locked ? t("languageLocked") : undefined}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "flex h-9 items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 text-sm text-white/70 transition-colors",
-          "hover:border-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-          open && "border-white/20 text-white"
+          "flex h-9 items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 text-xs font-semibold text-white/80 shadow-sm transition-all",
+          "hover:border-white/20 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+          "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/10",
+          open && "border-blue-400/40 bg-white/[0.08] text-white ring-1 ring-blue-400/30"
         )}
       >
-        <Languages className="size-4" />
-        <span className="font-medium">{SHORT[locale]}</span>
+        <Languages className="size-3.5 text-blue-400" />
+        <span>{SHORT[locale]}</span>
         <ChevronDown
           aria-hidden
           className={cn(
-            "size-3.5 transition-transform",
-            open && "rotate-180"
+            "size-3 transition-transform duration-200 text-white/60",
+            open && "rotate-180 text-white"
           )}
         />
       </button>
@@ -86,7 +92,7 @@ export function LanguageSwitcher() {
         <div
           role="menu"
           aria-label={t("changeLanguage")}
-          className="absolute right-0 top-full z-50 mt-2 w-44 rounded-2xl border border-white/10 bg-neutral-900/95 p-1 shadow-xl backdrop-blur-xl"
+          className="absolute right-0 top-full z-50 mt-2 w-48 rounded-2xl border border-white/15 bg-neutral-950/95 p-1.5 shadow-2xl backdrop-blur-2xl ring-1 ring-black/60"
         >
           {LOCALES.map((code) => {
             const active = code === locale;
@@ -99,15 +105,15 @@ export function LanguageSwitcher() {
                 lang={code}
                 onClick={() => choose(code)}
                 className={cn(
-                  "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors",
+                  "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium transition-all",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
                   active
-                    ? "bg-white/10 text-white"
-                    : "text-white/70 hover:bg-white/5 hover:text-white"
+                    ? "bg-blue-600/20 text-white ring-1 ring-blue-500/30"
+                    : "text-white/70 hover:bg-white/[0.06] hover:text-white"
                 )}
               >
                 <span>{tLang(`cards.${code}.name`)}</span>
-                {active && <Check aria-hidden className="size-4 text-blue-400" />}
+                {active && <Check aria-hidden className="size-3.5 text-blue-400" />}
               </button>
             );
           })}

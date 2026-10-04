@@ -39,6 +39,13 @@ body {
  * `font-mono tabular-nums` (see src/lib/cn.ts docs / CLAUDE.md).
  */
 
+/* Clickable affordance: interactive buttons/roles get a pointer cursor. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+summary {
+  cursor: pointer;
+}
+
 .bg-gradient-primary {
   background-image: var(--gradient-primary);
 }

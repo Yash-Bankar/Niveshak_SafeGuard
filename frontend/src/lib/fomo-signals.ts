@@ -4,15 +4,15 @@
  * The 6-question quiz sets a stable `base` score. After that, the live score
  * is a weighted blend of three behavioural/market signals:
  *
- *   final = 0.50·base + 0.20·language + 0.20·returns + 0.10·portfolio
+ *   final = 0.45·base + 0.20·language + 0.05·returns + 0.30·portfolio
  *
  *  - language  — urgency/concentration wording in the visitor's own chat
  *                messages ("rocket", "all my savings", …), in en/hi/mr.
  *  - returns   — "chasing overheated gains": holdings/watchlist stocks near
  *                their 52-week high, overbought (RSI>70/75) or up sharply in
- *                the last month. Blueprint: the user's `evaluate_fomo` py.
- *  - portfolio — poor diversification (few holdings / one sector) and thin
- *                monitoring (small watchlist).
+ *                the last month. Weighted low (5%).
+ *  - portfolio — how ASYMMETRIC the portfolio is by value (one big bet vs a
+ *                spread), plus sector concentration and thin monitoring.
  *
  * Everything here is deterministic and pure so it can be unit-tested. The
  * DB/market orchestration lives in `fomo-recompute.ts`.
@@ -21,10 +21,10 @@
 export type FomoBand = "green" | "yellow" | "red";
 
 export const FOMO_WEIGHTS = {
-  base: 0.5,
+  base: 0.45,
   language: 0.2,
-  returns: 0.2,
-  portfolio: 0.1,
+  returns: 0.05,
+  portfolio: 0.3,
 } as const;
 
 export interface SignalBreakdown {
@@ -167,42 +167,89 @@ export function returnsHeat(items: readonly HoldingMarket[]): number {
 }
 
 /* ------------------------------------------------------------------ *
- * Signal 3 — portfolio diversity & monitoring
+ * Signal 3 — portfolio asymmetry & monitoring
  * ------------------------------------------------------------------ */
 
+/** One holding with its market value (quantity × price) and sector. */
+export interface HoldingWeight {
+  /** quantity × price (or × buy price when the live price is unknown). */
+  value: number | null;
+  sector: string | null;
+}
+
 export interface PortfolioInput {
-  holdingsCount: number;
-  /** Sector per tracked stock (holdings, else watchlist); null when unknown. */
-  sectors: readonly (string | null)[];
+  holdings: readonly HoldingWeight[];
   watchlistCount: number;
 }
 
-/** Concentration (few holdings / one sector) + thin monitoring → higher. */
+/**
+ * Portfolio signal driven by ASYMMETRY, not the number of stocks. We compute
+ * the Herfindahl index of value shares and normalize it against a perfectly
+ * even portfolio (HHI = 1/n):
+ *
+ *   asymmetry = (HHI − 1/n) / (1 − 1/n)   ∈ [0, 1]
+ *
+ * 0 = all positions equal, 1 = a single dominant bet. So one huge holding
+ * with several tiny ones scores high even though the count is > 1. Sector
+ * concentration by value and a thin watchlist add a little.
+ */
 export function portfolioSignal(input: PortfolioInput): number {
-  const { holdingsCount, sectors, watchlistCount } = input;
-  let score = 0;
+  const { holdings, watchlistCount } = input;
+  const n = holdings.length;
 
-  if (holdingsCount === 0) score += 40;
-  else if (holdingsCount === 1) score += 50;
-  else if (holdingsCount === 2) score += 30;
-  else if (holdingsCount <= 4) score += 15;
+  const monitoring = watchlistCount < 3 ? 10 : watchlistCount < 6 ? 5 : 0;
 
-  const known = sectors.filter((sector): sector is string => Boolean(sector));
-  if (known.length > 0) {
-    const counts = new Map<string, number>();
-    for (const sector of known) {
-      counts.set(sector, (counts.get(sector) ?? 0) + 1);
-    }
-    const maxShare = Math.max(...counts.values()) / known.length;
-    if (maxShare >= 0.8) score += 30;
-    else if (maxShare >= 0.6) score += 20;
-    else if (maxShare >= 0.4) score += 10;
+  if (n === 0) {
+    // No recorded portfolio — concentration unknown.
+    return clampScore(30 + monitoring);
   }
 
-  if (watchlistCount < 3) score += 20;
-  else if (watchlistCount < 6) score += 10;
+  const totalValue = holdings.reduce(
+    (sum, holding) =>
+      sum + (holding.value !== null && holding.value > 0 ? holding.value : 0),
+    0
+  );
 
-  return clampScore(score);
+  let score = 0;
+
+  if (totalValue > 0) {
+    const hhi = holdings.reduce((sum, holding) => {
+      const share =
+        holding.value !== null && holding.value > 0
+          ? holding.value / totalValue
+          : 0;
+      return sum + share * share;
+    }, 0);
+
+    const evenShare = 1 / n;
+    const asymmetry =
+      n <= 1
+        ? 1
+        : Math.max(0, Math.min(1, (hhi - evenShare) / (1 - evenShare)));
+    score += asymmetry * 70;
+
+    // Sector concentration by value.
+    const bySector = new Map<string, number>();
+    for (const holding of holdings) {
+      if (!holding.sector) continue;
+      if (holding.value === null || holding.value <= 0) continue;
+      bySector.set(
+        holding.sector,
+        (bySector.get(holding.sector) ?? 0) + holding.value
+      );
+    }
+    if (bySector.size > 0) {
+      const maxShare = Math.max(...bySector.values()) / totalValue;
+      if (maxShare >= 0.8) score += 20;
+      else if (maxShare >= 0.6) score += 12;
+      else if (maxShare >= 0.45) score += 6;
+    }
+  } else {
+    // Values unknown (prices and buy prices both missing): fall back to count.
+    score += n === 1 ? 40 : n <= 3 ? 20 : 8;
+  }
+
+  return clampScore(score + monitoring);
 }
 
 /* ------------------------------------------------------------------ *

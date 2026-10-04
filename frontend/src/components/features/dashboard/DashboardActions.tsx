@@ -13,7 +13,7 @@ export function DashboardActions() {
   const openAssistant = useAssistantStore((state) => state.openAssistant);
 
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div data-tour="dashboard-actions" className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
       <Button
         size="lg"
         className="w-full justify-start gap-3"

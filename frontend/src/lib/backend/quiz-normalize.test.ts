@@ -119,4 +119,68 @@ describe("normalizeQuizSubmit", () => {
     expect(normalizeQuizSubmit({ total: 5 }, 5)).toBeNull();
     expect(normalizeQuizSubmit("nope", 5)).toBeNull();
   });
+
+  it("captures the AI verdict content when present", () => {
+    const result = normalizeQuizSubmit(
+      {
+        score: 4,
+        total: 5,
+        eligible: true,
+        correct_answers: ["B", "C", "A", "B", "B"],
+        per_question: [
+          {
+            id: "q1",
+            correct: false,
+            your_answer: "A",
+            correct_answer: "B",
+            explanation: "Because X",
+          },
+        ],
+        conclusion: {
+          headline: "H",
+          summary: "S",
+          strengths: ["a"],
+          risks: ["b"],
+          next_steps: ["c"],
+          mini_lesson: { title: "T", body: "B" },
+        },
+        verdict_title: "H",
+      },
+      5
+    );
+    expect(result?.conclusion?.headline).toBe("H");
+    expect(result?.conclusion?.mini_lesson.title).toBe("T");
+    expect(result?.per_question?.[0].explanation).toBe("Because X");
+    expect(result?.verdict_title).toBe("H");
+  });
+
+  it("reads AI content nested under a result wrapper", () => {
+    const result = normalizeQuizSubmit(
+      {
+        score: 3,
+        total: 5,
+        result: {
+          conclusion: { headline: "Nested", summary: "S" },
+          per_question: [
+            {
+              id: "q1",
+              correct: true,
+              your_answer: "A",
+              correct_answer: "A",
+              explanation: "E",
+            },
+          ],
+        },
+      },
+      5
+    );
+    expect(result?.conclusion?.headline).toBe("Nested");
+    expect(result?.per_question).toHaveLength(1);
+  });
+
+  it("omits AI content when the backend did not send it", () => {
+    const result = normalizeQuizSubmit({ score: 3 }, 5);
+    expect(result?.conclusion).toBeUndefined();
+    expect(result?.per_question).toBeUndefined();
+  });
 });

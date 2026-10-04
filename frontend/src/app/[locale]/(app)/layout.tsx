@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { isLocale } from "@/i18n/routing";
 import { AssistantBubble } from "@/components/features/chat/AssistantBubble";
+import { TourHost } from "@/components/features/guide/TourHost";
 import { BottomDock } from "@/components/features/shell/BottomDock";
 import { TopBar } from "@/components/features/shell/TopBar";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -29,6 +30,7 @@ export default async function AppLayout({
         <main className="flex-1 pb-24 md:pb-0">{children}</main>
         <BottomDock />
         <AssistantBubble />
+        <TourHost />
       </div>
     </ToastProvider>
   );

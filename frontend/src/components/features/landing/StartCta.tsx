@@ -34,7 +34,11 @@ export function StartCta({
   return (
     <Link
       href={hasLang ? "/dashboard" : "/select-language"}
-      className={cn(buttonVariants({ variant: "primary", size }), className)}
+      className={cn(
+        buttonVariants({ variant: "primary", size }),
+        "shadow-md shadow-blue-600/30 hover:shadow-lg hover:shadow-blue-500/50 hover:brightness-110 active:scale-[0.98] transition-all",
+        className
+      )}
     >
       {hasLang ? t("goToDashboard") : t("getStarted")}
     </Link>
