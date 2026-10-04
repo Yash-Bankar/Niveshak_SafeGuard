@@ -1,6 +1,6 @@
 <div align="center">
 
-# Niveshak SafeGuard
+# 🛡️ Niveshak SafeGuard
 
 ### Protecting India's First-Time Investor from FOMO, Scams and Impulsive Decisions
 
@@ -21,7 +21,7 @@
 
 ---
 
-## Table of Contents
+## 📑 Table of Contents
 
 1. [The Problem We Solve](#the-problem-we-solve)
 2. [What Track Does This Fit?](#what-track-does-this-fit)
@@ -41,7 +41,7 @@
 
 ---
 
-## The Problem We Solve
+## 📝 The Problem We Solve
 
 India added **~10 crore new retail investors** between 2020 and 2024. The vast majority are first-timers who:
 
@@ -57,7 +57,7 @@ India added **~10 crore new retail investors** between 2020 and 2024. The vast m
 
 ---
 
-## What Track Does This Fit?
+## 🛤️ What Track Does This Fit?
 
 We submit under the **Open Innovation** track because our project synthesises solutions across multiple SANGYAN problem domains:
 
@@ -73,7 +73,7 @@ Our project is a full-stack, production-grade system - not a prototype - that to
 
 ---
 
-## System Architecture
+## 🏗️ System Architecture
 
 ```
 +------------------------------------------------------------------+
@@ -120,7 +120,7 @@ Our project is a full-stack, production-grade system - not a prototype - that to
 
 ---
 
-## RAG Pipeline - How We Ground the AI
+## 🔍 RAG Pipeline - How We Ground the AI
 
 One of the most critical components of Niveshak SafeGuard is the **Retrieval-Augmented Generation (RAG)** pipeline. Instead of relying solely on the LLM's training data, every user question is first grounded in actual SEBI and RBI regulatory documents.
 
@@ -145,14 +145,14 @@ flowchart LR
     E --> H
 ```
 
-### Why BAAI/bge-m3?
+### 💡 Why BAAI/bge-m3?
 
 We chose the **BGE-M3** embedding model specifically because:
 - It is **truly multilingual** - supports English, Hindi, and Marathi in the same vector space
 - Queries in Hindi about a topic can retrieve the correct English SEBI document chunks
 - It is compact enough to run locally on CPU alongside the FastAPI server
 
-### RAG at Query Time
+### ⚡ RAG at Query Time
 
 For every `/chat` request, the FastAPI orchestrator:
 1. Embeds the user's message with `bge-m3`
@@ -166,7 +166,7 @@ The response field `"rag_sources_used": true` confirms when RAG context influenc
 
 ---
 
-## Streaming Database - Neon Postgres
+## 💾 Streaming Database - Neon Postgres
 
 Niveshak SafeGuard uses **Neon Postgres** as its persistent, serverless streaming database for all structured data that must survive across browser sessions.
 
@@ -180,7 +180,7 @@ Niveshak SafeGuard uses **Neon Postgres** as its persistent, serverless streamin
 | **Edge replication** | Low-latency reads, crucial for the always-visible FIN score in the TopBar |
 | **Real-time migrations** | Drizzle ORM + direct connection URL enables zero-downtime schema updates |
 
-### Database Schema
+### 🗄️ Database Schema
 
 ```
 +-----------------------------------------------------------------------+
@@ -211,7 +211,7 @@ Niveshak SafeGuard uses **Neon Postgres** as its persistent, serverless streamin
 +-----------------------------------------------------------------------+
 ```
 
-### Streaming / Real-Time Events
+### 🔄 Streaming / Real-Time Events
 
 The FIN score is **event-driven** and recomputed live on every significant user action:
 
@@ -226,9 +226,9 @@ Holdings changed            +-- language_signal  (chat wording analysis)
 
 ---
 
-## LLM and Fine-Tuning
+## 🧠 LLM and Fine-Tuning
 
-### Model: Fine-Tuned 7B (QLoRA)
+### 🤖 Model: Fine-Tuned 7B (QLoRA)
 
 | Parameter | Value |
 |---|---|
@@ -240,7 +240,7 @@ Holdings changed            +-- language_signal  (chat wording analysis)
 | Context Length | 4096 tokens |
 | Languages | English, Hindi, Marathi |
 
-### Training Dataset
+### 📚 Training Dataset
 
 The model was fine-tuned on a custom multilingual dataset built from:
 
@@ -248,7 +248,7 @@ The model was fine-tuned on a custom multilingual dataset built from:
 2. **FiQA Dataset** (Hugging Face) - Filtered to remove irrelevant Wall Street jargon
 3. **Translated Data** - Hindi and Marathi finance Q&A pairs in identical JSONL schema
 
-### Answer Modes
+### 💬 Answer Modes
 
 ```
 Plain Mode (first question):
@@ -258,7 +258,7 @@ Detailed Mode (user asks "explain in detail"):
   -> Four sections: Explanation, Analogy, Example, Common Misconception (~2048 tokens)
 ```
 
-### Hosting on Colab
+### ☁️ Hosting on Colab
 
 ```
 Colab T4 GPU
@@ -276,9 +276,9 @@ Colab T4 GPU
 
 ---
 
-## Feature Deep Dive
+## ✨ Feature Deep Dive
 
-### 1. Multilingual AI Financial Assistant
+### 🗣️ 1. Multilingual AI Financial Assistant
 
 ```
 User: "Mujhe Reliance mein invest karna chahiye?"
@@ -289,13 +289,13 @@ User: "Mujhe Reliance mein invest karna chahiye?"
          +-> Fine-Tuned LLM -> Hindi plain-mode answer, SEBI-grounded reasoning
 ```
 
-- Supports **English, Hindi, Marathi** seamlessly in one session
+- Supports **English, Hindi, Marathi** (for prototype) seamlessly in one session and can be scaled for more languages. 
 - Multi-turn memory: last 6 messages sent to model; last 40 stored in Neon
 - `rag_sources_used` and `live_data_used` flags returned with every response
 
 ---
 
-### 2. FIN Score - FOMO, Impulsivity, Negligence
+### 🎯 2. FIN Score - FOMO, Impulsivity, Negligence
 
 The FIN score is Niveshak SafeGuard's flagship behavioural metric - a **0-100 composite score**:
 
@@ -324,7 +324,7 @@ Score Bands:
 
 ---
 
-### 3. "License Before You Buy" Safety Quiz
+### 🚦 3. "Safety Quiz Before You Buy" 
 
 ```mermaid
 sequenceDiagram
@@ -353,7 +353,7 @@ sequenceDiagram
 
 ---
 
-### 4. FOMO Scorer
+### 🌡️ 4. FOMO Scorer
 
 | Signal | Max Points | Detection |
 |---|---|---|
@@ -363,7 +363,7 @@ sequenceDiagram
 
 ---
 
-### 5. Scam Screenshot Scanner
+### 📸 5. Scam Screenshot Scanner
 
 ```
 WhatsApp Screenshot
@@ -385,7 +385,7 @@ The image is **never stored** - processed in memory and discarded immediately.
 
 ---
 
-### 6. Volatility Monitor
+### 📉 6. Volatility Monitor
 
 A background task runs every 60 seconds watching a configured watchlist:
 
@@ -395,18 +395,18 @@ A background task runs every 60 seconds watching a configured watchlist:
 
 ---
 
-### 7. Voice - Speak and Listen
+### 🎙️ 7. Voice Support - Speak and Listen
 
 - **Input:** Browser records audio -> Whisper small transcription -> full chat pipeline -> text + MP3 returned
 - **Output:** Any on-screen text -> gTTS -> `audio/mpeg` in the session language
 
 ---
 
-## Frontend Architecture
+## 💻 Frontend Architecture
 
 **Stack:** Next.js 16 (App Router), React 19, Tailwind CSS v4, Framer Motion, Recharts, next-intl, Zustand, Drizzle ORM
 
-### Server-Side Boundary
+### 🧱 Server-Side Boundary
 
 ```
 Browser (Client Components)
@@ -424,7 +424,7 @@ Next.js /api/* Route Handlers  (server-only boundary)
 
 **Anonymous Identity:** No accounts, no login. A random `sg_vid` httpOnly cookie is minted on first visit. All data in Neon is keyed by this anonymous visitor ID.
 
-### Pages
+### 🧱 Pages
 
 | Route | Description |
 |---|---|
@@ -440,7 +440,7 @@ Next.js /api/* Route Handlers  (server-only boundary)
 
 ---
 
-## Backend Architecture
+## ⚙️️ Backend Architecture
 
 **Stack:** FastAPI, ChromaDB, BAAI/bge-m3, Whisper small, gTTS, Tesseract, yfinance, gradio_client
 
@@ -459,7 +459,7 @@ FastAPI Orchestrator
 +-- TTS                   (gTTS -> audio/mpeg)
 ```
 
-### Split-Tier Design
+### ⚖️ Split-Tier Design
 
 ```
 Local Machine (CPU)                         Google Colab (free T4 GPU)
@@ -472,9 +472,9 @@ Local Machine (CPU)                         Google Colab (free T4 GPU)
 
 ---
 
-## Data Flow Diagrams
+## 🗺️ Data Flow Diagrams
 
-### Complete Chat Request Flow
+### 🛤️ Complete Chat Request Flow
 
 ```
 User sends: "Should I buy Infosys?"
@@ -506,7 +506,7 @@ User sends: "Should I buy Infosys?"
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```
 Niveshak_SafeGuard/
@@ -550,9 +550,9 @@ Niveshak_SafeGuard/
 
 ---
 
-## Setup and Running
+## 🚀 Setup and Running
 
-### Prerequisites
+### ✅ Prerequisites
 
 | Component | Requirement |
 |---|---|
@@ -563,7 +563,7 @@ Niveshak_SafeGuard/
 | Tesseract OCR | UB Mannheim build (Windows) or brew install tesseract |
 | ffmpeg | winget install ffmpeg (Windows) or brew install ffmpeg |
 
-### Backend Setup
+### 🐍 Backend Setup
 
 ```powershell
 cd backend/RELIC-Backend
@@ -578,7 +578,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 > After starting the Colab notebook, set `COLAB_API_URL` in `main.py` to the printed Gradio endpoint.
 
-### Frontend Setup
+### ⚛️️ Frontend Setup
 
 ```bash
 cd frontend
@@ -599,9 +599,9 @@ npm run dev
 
 ---
 
-## API Reference Summary
+## 🔌 API Reference Summary
 
-### Backend (FastAPI)
+### ⚡ Backend (FastAPI)
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -617,7 +617,7 @@ npm run dev
 | `POST` | `/voice/speak` | Text to MP3 audio (gTTS) |
 | `POST` | `/voice/listen` | Audio to transcript to chat reply + audio |
 
-### Frontend API Routes (Next.js - server-only)
+### 🔗 Frontend API Routes (Next.js - server-only)
 
 | Method | Route | Upstream |
 |---|---|---|
@@ -635,16 +635,16 @@ npm run dev
 
 ---
 
-## Privacy and Guardrails
+## 🔒 Privacy and Guardrails
 
-### Privacy by Design
+### 🔐 Privacy by Design
 
 - **No accounts, no login.** Users are identified only by an anonymous `sg_vid` httpOnly cookie with no link to personal identity.
 - **Screenshots are never stored.** Uploaded images are processed entirely in memory and discarded immediately.
 - **Audio is never stored.** Voice recordings are transcribed in-memory and discarded.
 - **Secrets never reach the browser.** The FastAPI backend URL, API key, and Neon connection strings are exclusively server-side environment variables.
 
-### Product Guardrails
+### 🚧 Product Guardrails
 
 - No stock tips, no buy/sell/hold signals
 - No price predictions or price targets
@@ -652,7 +652,7 @@ npm run dev
 - Every AI output is educational and honest about uncertainty
 - The app deliberately **slows the user down** before acting
 
-### Known Limitations
+### ⚠️ Known Limitations
 
 | Limitation | Detail |
 |---|---|
@@ -664,7 +664,7 @@ npm run dev
 
 ---
 
-## Team
+## 👥 Team
 
 <div align="center">
 
