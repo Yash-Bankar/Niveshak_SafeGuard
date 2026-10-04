@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Disclaimer } from "@/components/features/Disclaimer";
 import { LanguageCards } from "@/components/features/language/LanguageCards";
+import { PortfolioCard } from "@/components/features/portfolio/PortfolioCard";
 
 export default async function ProfilePage({
   params,
@@ -63,6 +64,8 @@ export default async function ProfilePage({
           </p>
         </div>
       </section>
+
+      <PortfolioCard />
 
       <Disclaimer className="mt-8" />
     </div>

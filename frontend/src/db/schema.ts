@@ -13,6 +13,7 @@
  */
 
 import {
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -49,6 +50,21 @@ export interface SafetyAttemptResult {
   verdict_title: string;
 }
 
+/**
+ * Quiz-only attempt payload (Phase 7 — no screenshot scan yet): backend
+ * eligibility + the correct answer letters. The scan flow (PRD Phase 11)
+ * will keep storing the full `SafetyAttemptResult` shape.
+ */
+export interface SafetyAttemptQuizResult {
+  eligible: boolean;
+  correct_answers: string[];
+}
+
+/** Anything legal to store in `safety_attempts.result`. */
+export type SafetyAttemptResultPayload =
+  | SafetyAttemptResult
+  | SafetyAttemptQuizResult;
+
 export const fomoProfiles = pgTable(
   "fomo_profiles",
   {
@@ -57,11 +73,55 @@ export const fomoProfiles = pgTable(
     fomoScore: integer("fomo_score").notNull(),
     band: text("band").notNull(),
     answers: jsonb("answers").$type<number[]>().notNull(),
+    /**
+     * The quiz-derived anchor the live signals nudge (see
+     * src/lib/fomo-signals.ts). Null on rows created before the signal
+     * feature — the recompute falls back to `fomo_score`.
+     */
+    baseScore: integer("base_score"),
+    /** Last computed signal sub-scores (0–100), null until first recompute. */
+    signalLanguage: integer("signal_language"),
+    signalReturns: integer("signal_returns"),
+    signalPortfolio: integer("signal_portfolio"),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
   },
   (table) => [index("fomo_profiles_visitor_id_idx").on(table.visitorId)]
+);
+
+/**
+ * Manually recorded holdings — an educational "what I own" note, NOT a trade.
+ * There is no execution: the visitor types quantity + buy price themselves
+ * (or leaves quantity blank), purely so the FOMO signals can reason about
+ * recent returns and portfolio diversity. Keyed by visitor_id like every
+ * other table.
+ */
+export const holdings = pgTable(
+  "holdings",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    visitorId: text("visitor_id").notNull(),
+    symbol: text("symbol").notNull(),
+    quantity: doublePrecision("quantity").notNull(),
+    buyPrice: doublePrecision("buy_price").notNull(),
+    boughtAt: timestamp("bought_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("holdings_visitor_id_idx").on(table.visitorId),
+    uniqueIndex("holdings_visitor_symbol_unique").on(
+      table.visitorId,
+      table.symbol
+    ),
+  ]
 );
 
 export const safetyAttempts = pgTable(
@@ -73,12 +133,13 @@ export const safetyAttempts = pgTable(
     tipSource: text("tip_source"),
     scanRiskLevel: text("scan_risk_level"),
     scanFlags: jsonb("scan_flags").$type<string[]>(),
+    /** Backend quiz session reference — the sg_vid visitor id (session-keyed). */
     quizId: text("quiz_id").notNull(),
     answers: jsonb("answers").$type<Array<string | null>>().notNull(),
     score: integer("score").notNull(),
     total: integer("total").notNull(),
     verdictCode: text("verdict_code").notNull(),
-    result: jsonb("result").$type<SafetyAttemptResult>().notNull(),
+    result: jsonb("result").$type<SafetyAttemptResultPayload>().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -131,5 +192,7 @@ export type SafetyAttempt = typeof safetyAttempts.$inferSelect;
 export type NewSafetyAttempt = typeof safetyAttempts.$inferInsert;
 export type WatchlistRow = typeof watchlist.$inferSelect;
 export type NewWatchlistRow = typeof watchlist.$inferInsert;
+export type HoldingRow = typeof holdings.$inferSelect;
+export type NewHoldingRow = typeof holdings.$inferInsert;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type NewChatMessage = typeof chatMessages.$inferInsert;

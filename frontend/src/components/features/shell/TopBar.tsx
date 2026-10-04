@@ -4,7 +4,7 @@ import Image from "next/image";
 import { User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import { FomoMeter } from "@/components/features/shell/FomoMeter";
+import { FomoMeter } from "@/components/features/fomo/FomoMeter";
 import { LanguageSwitcher } from "@/components/features/shell/LanguageSwitcher";
 import {
   NAV_ITEMS,

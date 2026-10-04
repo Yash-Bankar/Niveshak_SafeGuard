@@ -36,7 +36,8 @@ absent; a browser is identified only by an anonymous `sg_vid` cookie.
 | Quiz length | 5 LLM-generated MCQs |
 | FOMO score | Computed deterministically in the web app from a 6-question quiz (no LLM). Higher = more impulsive. |
 | Bottom dock (mobile) | Home → Markets → Safety → Profile. Desktop uses a top nav with the same four links. |
-| Market data | All stock data comes from the backend (yfinance, `.NS` suffix). The browser never calls a market API directly. |
+| Backend contract | The deployed backend implements `/chat` + `/quiz/generate` + `/quiz/submit` + `/scan-image` only (`language` follows the prompt — model is multilingual); market data runs **inside Next.js**, the fraud scan runs **on the backend** (`/scan-image`) and is proxied + re-rendered by our `/api/fraud-scan` (never expose or render backend strings). See `docs/backend-contract.md` (supersedes PRD B5 where they differ). |
+| Market data | Fetched by **our** route handlers (server-side) from the Yahoo Finance JSON API — the API `yfinance` wraps, `.NS` suffix — with a short TTL cache; the browser only calls `/api/*` and never a market API directly. |
 | Language of the AI's output | Entire LLM output in the chosen language; tickers and numbers stay in Latin digits/letters. |
 
 ## Folder conventions

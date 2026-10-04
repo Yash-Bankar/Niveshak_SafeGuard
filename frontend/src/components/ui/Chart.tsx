@@ -74,27 +74,30 @@ export interface PriceChartProps {
   formatTick: (iso: string) => string;
   /** Formats a timestamp for the tooltip (e.g. IST). */
   formatTooltipTime: (iso: string) => string;
+  /** Accessible name for the chart region (translate at call site). */
+  ariaLabel: string;
   className?: string;
 }
 
 /**
  * Stock detail chart per the design spec (Phase 9):
  * vibrant blue #3B82F6 monotone spline, gradient fill to transparent,
- * minimal axes (time ticks only, no gridlines), crosshair on hover/touch.
- * The line stays blue even when the range is negative (the ChangePill
- * carries the color instead).
+ * minimal axes (time ticks only; faint horizontal gridlines kept by
+ * design), crosshair on hover/touch. The line stays blue even when the
+ * range is negative (the ChangePill carries the color instead).
  */
 export function PriceChart({
   data,
   formatTick,
   formatTooltipTime,
+  ariaLabel,
   className,
 }: PriceChartProps) {
   return (
     <div
       className={cn("h-[260px] w-full", className)}
       role="img"
-      aria-label="Price history chart"
+      aria-label={ariaLabel}
     >
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 4 }}>
@@ -139,12 +142,13 @@ export function PriceChart({
             labelFormatter={(label) =>
               formatTooltipTime(typeof label === "string" ? label : String(label ?? ""))
             }
+            separator=""
             formatter={(value) => [
               `₹${Number(value ?? 0).toLocaleString("en-IN", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}`,
-              "Price",
+              "",
             ]}
           />
           <ReferenceLine

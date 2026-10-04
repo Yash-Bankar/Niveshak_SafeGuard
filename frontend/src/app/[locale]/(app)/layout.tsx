@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { isLocale } from "@/i18n/routing";
-import { AssistantBubble } from "@/components/features/shell/AssistantBubble";
+import { AssistantBubble } from "@/components/features/chat/AssistantBubble";
 import { BottomDock } from "@/components/features/shell/BottomDock";
 import { TopBar } from "@/components/features/shell/TopBar";
+import { ToastProvider } from "@/components/ui/Toast";
 
 /**
  * Authenticated-feel app shell: sticky TopBar, page content with room for
@@ -22,11 +23,13 @@ export default async function AppLayout({
   if (isLocale(locale)) setRequestLocale(locale);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <TopBar />
-      <main className="flex-1 pb-24 md:pb-0">{children}</main>
-      <BottomDock />
-      <AssistantBubble />
-    </div>
+    <ToastProvider>
+      <div className="flex min-h-screen flex-col">
+        <TopBar />
+        <main className="flex-1 pb-24 md:pb-0">{children}</main>
+        <BottomDock />
+        <AssistantBubble />
+      </div>
+    </ToastProvider>
   );
 }
