@@ -1,6 +1,8 @@
 # 📈 BharatFinanceEdu (RelicLLM)
 
-BharatFinanceEdu is an AI-powered, multilingual financial educator for Indian retail investors. The project covers the full pipeline: building an educational finance dataset, fine-tuning a 7B LLM (Qwen 2.5) on it, grounding the model with an offline RAG knowledge base of SEBI and RBI guidelines, connecting it to live NSE market data, and serving everything through a FastAPI backend with behavioural guardrails that slow users down before impulsive investment decisions.
+**BharatFinanceEdu** (RelicLLM) is the dedicated AI, RAG, and market-data orchestrator powering **Niveshak SafeGuard** — a multilingual financial resilience web application for Indian retail investors. 
+
+This repository covers the complete backend pipeline: building a domain-specific educational finance dataset, fine-tuning a 7B LLM (Qwen 2.5) using QLoRA, grounding the model with an offline RAG vector store of SEBI and RBI regulatory guidelines, integrating real-time NSE market data via yfinance, and serving everything through a FastAPI orchestration layer equipped with scam-detection OCR and behavioral guardrails.
 
 > **Disclaimer:** BharatFinanceEdu is an educational tool. It is not a SEBI-registered investment adviser and nothing it returns is investment advice.
 
